@@ -383,7 +383,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
             ulong indirectBufferGpuVa = count.GpuVa;
 
-            var bufferCache = _processor.MemoryManager.Physical.BufferCache;
+            var bufferCache = _processor.MemoryManager.GetBackingMemory(indirectBufferGpuVa).BufferCache;
 
             bool useBuffer = bufferCache.CheckModified(_processor.MemoryManager, indirectBufferGpuVa, IndirectIndexedDataEntrySize, out ulong indirectBufferAddress);
 
@@ -393,6 +393,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
                 _processor.ThreedClass.DrawIndirect(
                     topology,
+                    bufferCache,
+                    null,
                     new MultiRange(indirectBufferAddress, IndirectIndexedDataEntrySize),
                     default,
                     1,
@@ -491,15 +493,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                 }
             }
 
-            var bufferCache = _processor.MemoryManager.Physical.BufferCache;
+            var indirectBufferCache = _processor.MemoryManager.GetBackingMemory(indirectBufferGpuVa).BufferCache;
+            var parameterBufferCache = _processor.MemoryManager.GetBackingMemory(parameterBufferGpuVa).BufferCache;
 
             ulong indirectBufferSize = (ulong)maxDrawCount * (ulong)stride;
 
-            MultiRange indirectBufferRange = bufferCache.TranslateAndCreateMultiBuffers(_processor.MemoryManager, indirectBufferGpuVa, indirectBufferSize);
-            MultiRange parameterBufferRange = bufferCache.TranslateAndCreateMultiBuffers(_processor.MemoryManager, parameterBufferGpuVa, 4);
+            MultiRange indirectBufferRange = indirectBufferCache.TranslateAndCreateMultiBuffers(_processor.MemoryManager, indirectBufferGpuVa, indirectBufferSize);
+            MultiRange parameterBufferRange = parameterBufferCache.TranslateAndCreateMultiBuffers(_processor.MemoryManager, parameterBufferGpuVa, 4);
 
             _processor.ThreedClass.DrawIndirect(
                 topology,
+                indirectBufferCache,
+                parameterBufferCache,
                 indirectBufferRange,
                 parameterBufferRange,
                 maxDrawCount,

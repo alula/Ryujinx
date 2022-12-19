@@ -233,6 +233,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
             var dstCopyTexture = Unsafe.As<uint, TwodTexture>(ref _state.State.SetDstFormat);
             var srcCopyTexture = Unsafe.As<uint, TwodTexture>(ref _state.State.SetSrcFormat);
 
+            var srcTextureCache = memoryManager.GetBackingMemory(srcCopyTexture.Address.Pack()).TextureCache;
+            var dstTextureCache = memoryManager.GetBackingMemory(dstCopyTexture.Address.Pack()).TextureCache;
+
             long srcX = ((long)_state.State.SetPixelsFromMemorySrcX0Int << 32) | (long)(ulong)_state.State.SetPixelsFromMemorySrcX0Frac;
             long srcY = ((long)_state.State.PixelsFromMemorySrcY0Int << 32) | (long)(ulong)_state.State.SetPixelsFromMemorySrcY0Frac;
 
@@ -304,7 +307,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
             // are the same, as we can't blit between different depth formats.
             bool srcDepthAlias = srcCopyTexture.Format == dstCopyTexture.Format;
 
-            var srcTexture = memoryManager.Physical.TextureCache.FindOrCreateTexture(
+            var srcTexture = srcTextureCache.FindOrCreateTexture(
                 memoryManager,
                 srcCopyTexture,
                 offset,
@@ -325,7 +328,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
                 return;
             }
 
-            memoryManager.Physical.TextureCache.Lift(srcTexture);
+            srcTextureCache.Lift(srcTexture);
 
             // When the source texture that was found has a depth format,
             // we must enforce the target texture also has a depth format,
@@ -341,7 +344,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
                 dstCopyTextureFormat = dstCopyTexture.Format.Convert();
             }
 
-            var dstTexture = memoryManager.Physical.TextureCache.FindOrCreateTexture(
+            var dstTexture = dstTextureCache.FindOrCreateTexture(
                 memoryManager,
                 dstCopyTexture,
                 0,

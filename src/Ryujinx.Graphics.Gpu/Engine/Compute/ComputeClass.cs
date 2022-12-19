@@ -106,6 +106,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
 
             shaderGpuVa += (uint)qmd.ProgramOffset;
 
+            var shaderCache = memoryManager.GetBackingMemory(shaderGpuVa).ShaderCache;
+
             int localMemorySize = qmd.ShaderLocalMemoryLowSize + qmd.ShaderLocalMemoryHighSize;
 
             int sharedMemorySize = Math.Min(qmd.SharedMemorySize, _context.Capabilities.MaximumComputeSharedMemorySize);
@@ -139,7 +141,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                 sharedMemorySize,
                 _channel.BufferManager.HasUnalignedStorageBuffers);
 
-            CachedShaderProgram cs = memoryManager.Physical.ShaderCache.GetComputeShader(_channel, poolState, computeState, shaderGpuVa);
+            CachedShaderProgram cs = shaderCache.GetComputeShader(_channel, poolState, computeState, shaderGpuVa);
 
             _context.Renderer.Pipeline.SetProgram(cs.HostProgram);
 
@@ -153,10 +155,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
             {
                 BufferDescriptor sb = info.SBuffers[index];
 
-                ulong sbDescAddress = _channel.BufferManager.GetComputeUniformBufferAddress(sb.SbCbSlot);
+                (var physical, ulong sbDescAddress) = _channel.BufferManager.GetComputeUniformBufferAddress(sb.SbCbSlot);
                 sbDescAddress += (ulong)sb.SbCbOffset * 4;
 
-                SbDescriptor sbDescriptor = _channel.MemoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
+                SbDescriptor sbDescriptor = physical.Read<SbDescriptor>(sbDescAddress);
 
                 uint size;
                 if (sb.SbCbSlot == Constants.DriverReservedUniformBuffer)
@@ -184,7 +186,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                     sharedMemorySize,
                     _channel.BufferManager.HasUnalignedStorageBuffers);
 
-                cs = memoryManager.Physical.ShaderCache.GetComputeShader(_channel, poolState, computeState, shaderGpuVa);
+                cs = shaderCache.GetComputeShader(_channel, poolState, computeState, shaderGpuVa);
 
                 _context.Renderer.Pipeline.SetProgram(cs.HostProgram);
             }

@@ -9,6 +9,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
     readonly struct BufferBounds
     {
         /// <summary>
+        /// Physical memory backing the buffer.
+        /// </summary>
+        public PhysicalMemory Physical { get; }
+
+        /// <summary>
+        /// Buffer cache that owns the buffer.
+        /// </summary>
+        public BufferCache BufferCache => Physical.BufferCache;
+
+        /// <summary>
         /// Physical memory ranges where the buffer is mapped.
         /// </summary>
         public MultiRange Range { get; }
@@ -26,10 +36,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Creates a new buffer region.
         /// </summary>
+        /// <param name="physical">Physical memory backing the buffer</param>
         /// <param name="range">Physical memory ranges where the buffer is mapped</param>
         /// <param name="flags">Buffer usage flags</param>
-        public BufferBounds(MultiRange range, BufferUsageFlags flags = BufferUsageFlags.None)
+        public BufferBounds(PhysicalMemory physical, MultiRange range, BufferUsageFlags flags = BufferUsageFlags.None)
         {
+            Physical = physical;
             Range = range;
             Flags = flags;
         }

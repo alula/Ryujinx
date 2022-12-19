@@ -611,7 +611,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             {
                 ref BufferBounds bounds = ref channel.BufferManager.GetUniformBufferBounds(isCompute, stageIndex, textureBufferIndex);
 
-                cachedTextureBuffer = MemoryMarshal.Cast<byte, int>(channel.MemoryManager.Physical.GetSpan(bounds.Range));
+                cachedTextureBuffer = MemoryMarshal.Cast<byte, int>(bounds.Physical.GetSpan(bounds.Range));
                 cachedTextureBufferIndex = textureBufferIndex;
 
                 if (samplerBufferIndex == textureBufferIndex)
@@ -625,7 +625,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             {
                 ref BufferBounds bounds = ref channel.BufferManager.GetUniformBufferBounds(isCompute, stageIndex, samplerBufferIndex);
 
-                cachedSamplerBuffer = MemoryMarshal.Cast<byte, int>(channel.MemoryManager.Physical.GetSpan(bounds.Range));
+                cachedSamplerBuffer = MemoryMarshal.Cast<byte, int>(bounds.Physical.GetSpan(bounds.Range));
                 cachedSamplerBufferIndex = samplerBufferIndex;
             }
 

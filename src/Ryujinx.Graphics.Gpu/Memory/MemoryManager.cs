@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Physical memory where the virtual memory is mapped into.
         /// </summary>
-        internal PhysicalMemory Physical { get; }
+        private PhysicalMemory Physical { get; }
 
         /// <summary>
         /// Virtual buffer cache.
@@ -63,6 +63,35 @@ namespace Ryujinx.Graphics.Gpu.Memory
             MemoryUnmapped += Physical.BufferCache.MemoryUnmappedHandler;
             MemoryUnmapped += VirtualBufferCache.MemoryUnmappedHandler;
             MemoryUnmapped += CounterCache.MemoryUnmappedHandler;
+        }
+
+        /// <summary>
+        /// Attaches the memory manager to a new GPU channel.
+        /// </summary>
+        /// <param name="rebind">Action to be performed when the buffer cache changes</param>
+        internal void AttachToChannel(Action rebind)
+        {
+            Physical.IncrementReferenceCount();
+            Physical.BufferCache.NotifyBuffersModified += rebind;
+            Physical.BufferCache.QueuePrune();
+        }
+
+        /// <summary>
+        /// Attaches the memory manager to a new GPU channel.
+        /// </summary>
+        /// <param name="rebind">Action that was performed when the buffer cache changed</param>
+        internal void DetachFromChannel(Action rebind)
+        {
+            Physical.BufferCache.NotifyBuffersModified -= rebind;
+            Physical.DecrementReferenceCount();
+        }
+
+        /// <summary>
+        /// Queues a prune of invalid entries on the buffer cache.
+        /// </summary>
+        internal void QueuePrune()
+        {
+            Physical.BufferCache.QueuePrune();
         }
 
         /// <summary>
@@ -532,6 +561,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return true;
         }
 
+        internal PhysicalMemory GetBackingMemory(ulong va)
+        {
+            return Physical;
+        }
+
         /// <summary>
         /// Validates a GPU virtual address.
         /// </summary>
@@ -725,7 +759,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>Physical address</returns>
         private static ulong UnpackPaFromPte(ulong pte)
         {
-            return pte & 0xffffffffffffffUL;
+            return pte & 0xffffffffffffUL;
         }
     }
 }
