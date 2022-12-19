@@ -157,6 +157,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             var bufferCache = _channel.MemoryManager.GetBackingMemory(gpuVa).BufferCache;
             MultiRange range = bufferCache.TranslateAndCreateBuffer(_channel.MemoryManager, gpuVa, size);
 
+            _indexBuffer.BufferCache = bufferCache;
             _indexBuffer.Range = range;
             _indexBuffer.Type = type;
 
@@ -185,21 +186,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="divisor">Vertex divisor of the buffer, for instanced draws</param>
         public void SetVertexBuffer(int index, ulong gpuVa, ulong size, int stride, int divisor)
         {
-            // MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffer(_channel.MemoryManager, gpuVa, size);
-
-            // _vertexBuffers[index].Range = range;
-            // _vertexBuffers[index].Stride = stride;
-            // _vertexBuffers[index].Divisor = divisor;
-            // var bufferCache = _channel.MemoryManager.GetBackingMemory(gpuVa).BufferCache;
-            // ulong address = bufferCache.TranslateAndCreateBuffer(_channel.MemoryManager, gpuVa, size);
-
-            // ref VertexBuffer vb = ref _vertexBuffers[index];
-
-            // vb.BufferCache = bufferCache;
-            // vb.Address = address;
-            // vb.Size = size;
-            // vb.Stride = stride;
-            // vb.Divisor = divisor;
             var bufferCache = _channel.MemoryManager.GetBackingMemory(gpuVa).BufferCache;
             MultiRange range = bufferCache.TranslateAndCreateBuffer(_channel.MemoryManager, gpuVa, size);
 

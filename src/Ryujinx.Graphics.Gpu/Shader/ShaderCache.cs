@@ -785,18 +785,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Reads data from physical memory, returns an empty array if the memory is unmapped or size is 0.
         /// </summary>
-        /// <param name="backing">Backing memory of the pool</param>
+        /// <param name="physicalMemory">Physical memory to read the data from, might be null</param>
         /// <param name="address">Physical address of the region to read</param>
         /// <param name="size">Size in bytes of the data</param>
         /// <returns>An array with the data at the specified memory location</returns>
-        private static byte[] ReadArray(PhysicalMemory backing, ulong address, int size)
+        private static byte[] ReadArray(PhysicalMemory physicalMemory, ulong address, int size)
         {
-            if (address == MemoryManager.PteUnmapped || size == 0)
+            if (size == 0 || physicalMemory == null)
             {
                 return Array.Empty<byte>();
             }
 
-            return backing.GetSpan(address, size).ToArray();
+            return physicalMemory.GetSpan(address, size).ToArray();
         }
 
         /// <summary>
