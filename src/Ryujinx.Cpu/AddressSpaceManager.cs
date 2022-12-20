@@ -1,17 +1,20 @@
+using Ryujinx.Cpu;
+using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
+using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Memory
+namespace Ryujinx.Cpu
 {
     /// <summary>
     /// Represents a address space manager.
     /// Supports virtual memory region mapping, address translation and read/write access to mapped regions.
     /// </summary>
-    public sealed class AddressSpaceManager : IVirtualMemoryManager, IWritableBlock
+    public sealed class AddressSpaceManager : IVirtualMemoryManagerTracked, IWritableBlock
     {
         public const int PageBits = PageTable<nuint>.PageBits;
         public const int PageSize = PageTable<nuint>.PageSize;
@@ -29,6 +32,8 @@ namespace Ryujinx.Memory
 
         private readonly MemoryBlock _backingMemory;
         private readonly PageTable<nuint> _pageTable;
+        private readonly MemoryTracking _tracking;
+        private bool _writeTracked;
 
         /// <summary>
         /// Creates a new instance of the memory manager.
@@ -50,6 +55,7 @@ namespace Ryujinx.Memory
             _addressSpaceSize = asSize;
             _backingMemory = backingMemory;
             _pageTable = new PageTable<nuint>();
+            _tracking = new MemoryTracking(this, 0x1000);
         }
 
         /// <inheritdoc/>
@@ -103,6 +109,14 @@ namespace Ryujinx.Memory
         }
 
         /// <inheritdoc/>
+        public T ReadTracked<T>(ulong va) where T : unmanaged
+        {
+            SignalMemoryTracking(va, (ulong)Unsafe.SizeOf<T>(), false);
+
+            return Read<T>(va);
+        }
+
+        /// <inheritdoc/>
         public void Read(ulong va, Span<byte> data)
         {
             ReadImpl(va, data);
@@ -116,6 +130,14 @@ namespace Ryujinx.Memory
 
         /// <inheritdoc/>
         public void Write(ulong va, ReadOnlySpan<byte> data)
+        {
+            SignalMemoryTracking(va, (ulong)data.Length, write: true);
+
+            WriteUntracked(va, data);
+        }
+
+        /// <inheritdoc/>
+        public void WriteUntracked(ulong va, ReadOnlySpan<byte> data)
         {
             if (data.Length == 0)
             {
@@ -166,6 +188,11 @@ namespace Ryujinx.Memory
                 return ReadOnlySpan<byte>.Empty;
             }
 
+            if (tracked)
+            {
+                SignalMemoryTracking(va, (ulong)size, write: false);
+            }
+
             if (IsContiguousAndMapped(va, size))
             {
                 return GetHostSpanContiguous(va, size);
@@ -186,6 +213,11 @@ namespace Ryujinx.Memory
             if (size == 0)
             {
                 return new WritableRegion(null, va, Memory<byte>.Empty);
+            }
+
+            if (tracked)
+            {
+                SignalMemoryTracking(va, (ulong)size, true);
             }
 
             if (IsContiguousAndMapped(va, size))
@@ -209,6 +241,8 @@ namespace Ryujinx.Memory
             {
                 ThrowMemoryNotContiguous();
             }
+
+            SignalMemoryTracking(va, (ulong)Unsafe.SizeOf<T>(), true);
 
             return ref *(T*)GetHostAddress(va);
         }
@@ -463,13 +497,34 @@ namespace Ryujinx.Memory
         /// <inheritdoc/>
         public void TrackingReprotect(ulong va, ulong size, MemoryPermission protection)
         {
-            throw new NotImplementedException();
+            _writeTracked = true;
         }
 
         /// <inheritdoc/>
         public void SignalMemoryTracking(ulong va, ulong size, bool write, bool precise = false, int? exemptId = null)
         {
-            // Only the ARM Memory Manager has tracking for now.
+            if (_writeTracked)
+            {
+                _tracking.VirtualMemoryEvent(va, size, write, precise);
+            }
+        }
+
+        /// <inheritdoc/>
+        public RegionHandle BeginTracking(ulong address, ulong size, int id)
+        {
+            return _tracking.BeginTracking(address, size, id);
+        }
+
+        /// <inheritdoc/>
+        public MultiRegionHandle BeginGranularTracking(ulong address, ulong size, IEnumerable<IRegionHandle> handles, ulong granularity, int id)
+        {
+            return _tracking.BeginGranularTracking(address, size, handles, granularity, id);
+        }
+
+        /// <inheritdoc/>
+        public SmartMultiRegionHandle BeginSmartGranularTracking(ulong address, ulong size, ulong granularity, int id)
+        {
+            return _tracking.BeginSmartGranularTracking(address, size, granularity, id);
         }
     }
 }

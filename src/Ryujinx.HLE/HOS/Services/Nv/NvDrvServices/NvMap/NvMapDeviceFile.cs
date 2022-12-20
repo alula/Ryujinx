@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
             uint size = BitUtils.AlignUp(arguments.Size, (uint)MemoryManager.PageSize);
 
-            arguments.Handle = CreateHandleFromMap(new NvMapHandle(size));
+            arguments.Handle = CreateHandleFromMap(new NvMapHandle(size) { OwnerPid = Owner });
 
             Logger.Debug?.Print(LogClass.ServiceNv, $"Created map {arguments.Handle} with size 0x{size:x8}!");
 
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private NvInternalResult FromId(ref NvMapFromId arguments)
         {
-            NvMapHandle map = GetMapFromHandle(Owner, arguments.Id);
+            NvMapHandle map = GetMapFromHandle(arguments.Id);
 
             if (map == null)
             {
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private NvInternalResult Alloc(ref NvMapAlloc arguments)
         {
-            NvMapHandle map = GetMapFromHandle(Owner, arguments.Handle);
+            NvMapHandle map = GetMapFromHandle(arguments.Handle);
 
             if (map == null)
             {
@@ -152,7 +152,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private NvInternalResult Free(ref NvMapFree arguments)
         {
-            NvMapHandle map = GetMapFromHandle(Owner, arguments.Handle);
+            NvMapHandle map = GetMapFromHandle(arguments.Handle);
 
             if (map == null)
             {
@@ -179,7 +179,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private NvInternalResult Param(ref NvMapParam arguments)
         {
-            NvMapHandle map = GetMapFromHandle(Owner, arguments.Handle);
+            NvMapHandle map = GetMapFromHandle(arguments.Handle);
 
             if (map == null)
             {
@@ -217,7 +217,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private NvInternalResult GetId(ref NvMapGetId arguments)
         {
-            NvMapHandle map = GetMapFromHandle(Owner, arguments.Handle);
+            NvMapHandle map = GetMapFromHandle(arguments.Handle);
 
             if (map == null)
             {
@@ -237,7 +237,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
             // _maps.TryRemove(GetOwner(), out _);
         }
 
-        private int CreateHandleFromMap(NvMapHandle map)
+        public static int CreateMap(ulong pid, ulong address, int size)
+        {
+            return CreateHandleFromMap(new NvMapHandle(size) { Address = address, OwnerPid = pid });
+        }
+
+        private static int CreateHandleFromMap(NvMapHandle map)
         {
             return _maps.Add(map);
         }
@@ -249,12 +254,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         public static void IncrementMapRefCount(ulong pid, int handle)
         {
-            GetMapFromHandle(pid, handle)?.IncrementRefCount();
+            GetMapFromHandle(handle)?.IncrementRefCount();
         }
 
         public static bool DecrementMapRefCount(ulong pid, int handle)
         {
-            NvMapHandle map = GetMapFromHandle(pid, handle);
+            NvMapHandle map = GetMapFromHandle(handle);
 
             if (map == null)
             {
@@ -275,7 +280,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
             }
         }
 
-        public static NvMapHandle GetMapFromHandle(ulong pid, int handle)
+        public static NvMapHandle GetMapFromHandle(int handle)
         {
             return _maps.Get(handle);
         }

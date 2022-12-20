@@ -6,7 +6,6 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
-using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -86,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         private IProcessContextFactory _contextFactory;
         public IProcessContext Context { get; private set; }
-        public IVirtualMemoryManager CpuMemory => Context.AddressSpace;
+        public Cpu.IVirtualMemoryManagerTracked CpuMemory => Context.AddressSpace;
 
         public HleProcessDebugger Debugger { get; private set; }
 

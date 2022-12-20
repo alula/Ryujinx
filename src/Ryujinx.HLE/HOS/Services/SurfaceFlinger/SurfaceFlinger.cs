@@ -406,7 +406,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             ulong bufferOffset = (ulong)item.GraphicBuffer.Object.Buffer.Surfaces[0].Offset;
 
-            NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(layer.Owner, nvMapHandle);
+            NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(nvMapHandle);
 
             ulong frameBufferAddress = map.Address + bufferOffset;
 

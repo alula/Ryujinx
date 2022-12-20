@@ -873,6 +873,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return UnpackKindFromPte(pte);
         }
 
+        public bool IsForeignMapping(ulong va)
+        {
+            ulong pte = GetPte(va);
+
+            if (pte == PteUnmapped)
+            {
+                return false;
+            }
+
+            return UnpackPIndexFromPte(pte) != 0;
+        }
+
         /// <summary>
         /// Gets the Page Table entry for a given GPU virtual address.
         /// </summary>

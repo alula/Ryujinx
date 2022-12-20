@@ -237,7 +237,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             // NOTE: Service checks a private field and return an error if the SystemBufferSharing is disabled.
 
-            return ResultCode.NotImplemented;
+            return ResultCode.Success;
         }
 
         [CommandCmif(44)] // 10.0.0+
