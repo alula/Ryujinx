@@ -214,7 +214,7 @@ namespace Ryujinx.Graphics.Gpu
 
             if (pt != null)
             {
-                ReadOnlySpan<byte> inputData = CaptureLastFrame(pt.Texture.HostTexture, pt.Crop);
+                byte[] inputData = CaptureLastFrame(pt.Texture.HostTexture, pt.Crop);
 
                 int size = SizeCalculator.GetBlockLinearTextureSize(
                     CaptureTextureWidth,
@@ -322,7 +322,7 @@ namespace Ryujinx.Graphics.Gpu
             }
         }
 
-        private ReadOnlySpan<byte> CaptureLastFrame(ITexture lastFrame, ImageCrop crop)
+        private byte[] CaptureLastFrame(ITexture lastFrame, ImageCrop crop)
         {
             int cropLeft, cropRight, cropTop, cropBottom;
 
@@ -375,11 +375,18 @@ namespace Ryujinx.Graphics.Gpu
             Extents2D srcRegion = new(x1, y1, x2, y2);
             Extents2D dstRegion = new(0, 0, CaptureTextureWidth, CaptureTextureHeight);
 
-            lastFrame.CopyTo(_captureTexture, srcRegion, dstRegion, true);
+            byte[] outputData = null;
 
-            using var data = _captureTexture.GetData();
+            _context.Renderer.BackgroundContextAction(() =>
+            {
+                lastFrame.CopyTo(_captureTexture, srcRegion, dstRegion, true);
 
-            return data.Get().ToArray();
+                using var data = _captureTexture.GetData();
+
+                outputData = data.Get().ToArray();
+            });
+
+            return outputData;
         }
 
         /// <summary>
