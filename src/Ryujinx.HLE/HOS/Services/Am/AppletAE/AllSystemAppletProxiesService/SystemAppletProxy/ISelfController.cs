@@ -224,7 +224,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         public ResultCode CreateManagedDisplayLayer(ServiceCtx context)
         {
             context.Device.System.SurfaceFlinger.CreateLayer(out long layerId, _pid);
-            context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
 
             context.ResponseData.Write(layerId);
 
@@ -240,13 +239,22 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             return ResultCode.Success;
         }
 
+        [CommandCmif(42)] // 4.0.0+
+        // GetSystemSharedLayerHandle() -> (nn::vi::fbshare::SharedBufferHandle, nn::vi::fbshare::SharedLayerHandle)
+        public ResultCode GetSystemSharedLayerHandle(ServiceCtx context)
+        {
+            context.ResponseData.Write((ulong)context.Device.System.ViServerS.GetSharedBufferNvMapId());
+            context.ResponseData.Write(context.Device.System.ViServerS.GetSharedLayerId());
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(44)] // 10.0.0+
         // CreateManagedDisplaySeparableLayer() -> (u64, u64)
         public ResultCode CreateManagedDisplaySeparableLayer(ServiceCtx context)
         {
             context.Device.System.SurfaceFlinger.CreateLayer(out long displayLayerId, _pid);
             context.Device.System.SurfaceFlinger.CreateLayer(out long recordingLayerId, _pid);
-            context.Device.System.SurfaceFlinger.SetRenderLayer(displayLayerId);
 
             context.ResponseData.Write(displayLayerId);
             context.ResponseData.Write(recordingLayerId);

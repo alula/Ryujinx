@@ -1,7 +1,10 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
+using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
+using Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService.Types.Fbshare;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
@@ -79,58 +82,95 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
             return ResultCode.Success;
         }
 
+        [CommandCmif(8250)] // 4.0.0+
+        // OpenSharedLayer(nn::vi::fbshare::SharedLayerHandle, nn::applet::AppletResourceUserId, pid)
+        public ResultCode OpenSharedLayer(ServiceCtx context)
+        {
+            long sharedLayerHandle = context.RequestData.ReadInt64();
+            long appletResourceUserId = context.RequestData.ReadInt64();
+
+            context.Device.System.ViServerS.OpenSharedLayer(sharedLayerHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(8251)] // 4.0.0+
+        // CloseSharedLayer(nn::vi::fbshare::SharedLayerHandle)
+        public ResultCode CloseSharedLayer(ServiceCtx context)
+        {
+            long sharedLayerHandle = context.RequestData.ReadInt64();
+
+            context.Device.System.ViServerS.CloseSharedLayer(sharedLayerHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(8252)] // 4.0.0+
+        // ConnectSharedLayer(nn::vi::fbshare::SharedLayerHandle)
+        public ResultCode ConnectSharedLayer(ServiceCtx context)
+        {
+            long sharedLayerHandle = context.RequestData.ReadInt64();
+
+            context.Device.System.ViServerS.ConnectSharedLayer(sharedLayerHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(8253)] // 4.0.0+
+        // DisconnectSharedLayer(nn::vi::fbshare::SharedLayerHandle)
+        public ResultCode DisconnectSharedLayer(ServiceCtx context)
+        {
+            long sharedLayerHandle = context.RequestData.ReadInt64();
+
+            context.Device.System.ViServerS.DisconnectSharedLayer(sharedLayerHandle);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(8254)] // 4.0.0+
-        // AcquireSharedFrameBuffer()
+        // AcquireSharedFrameBuffer(nn::vi::fbshare::SharedLayerHandle) -> (nn::vi::native::NativeSync, nn::vi::fbshare::SharedLayerTextureIndexList, u64)
         public ResultCode AcquireSharedFrameBuffer(ServiceCtx context)
         {
-            // 36 bytes
-            context.ResponseData.Write(0UL);
-            context.ResponseData.Write(0UL);
-            context.ResponseData.Write(0UL);
-            context.ResponseData.Write(0UL);
-            context.ResponseData.Write(0);
+            long sharedLayerHandle = context.RequestData.ReadInt64();
 
-            // 16 bytes + 4 bytes
-            context.ResponseData.Write(0UL);
-            context.ResponseData.Write(0UL);
+            int slot = context.Device.System.ViServerS.DequeueFrameBuffer(sharedLayerHandle, out AndroidFence fence);
+
+            var indexList = new SharedLayerTextureIndexList();
+
+            for (int i = 0; i < indexList.Indices.Length; i++)
+            {
+                indexList.Indices[i] = context.Device.System.ViServerS.GetFrameBufferMapIndex(i);
+            }
+
+            context.ResponseData.WriteStruct(fence);
+            context.ResponseData.WriteStruct(indexList);
             context.ResponseData.Write(0); // Padding
-
-            context.ResponseData.Write(0UL); // MemoryHandleId (>= 0 and < 16)
+            context.ResponseData.Write((ulong)slot);
 
             return ResultCode.Success;
         }
 
         [CommandCmif(8255)] // 4.0.0+
-        // PresentSharedFrameBuffer()
+        // PresentSharedFrameBuffer(nn::vi::native::NativeSync, nn::vi::CropRegion, u32, u32, nn::vi::fbshare::SharedLayerHandle, u64)
         public ResultCode PresentSharedFrameBuffer(ServiceCtx context)
         {
-            uint unknwon0 = context.RequestData.ReadUInt32();
-            uint unknwon4 = context.RequestData.ReadUInt32();
-            ulong fenceValue = context.RequestData.ReadUInt64(); // ?
-            uint unknwon10 = context.RequestData.ReadUInt32();
-            uint unknwon14 = context.RequestData.ReadUInt32();
-            uint unknwon18 = context.RequestData.ReadUInt32();
-            uint unknwon1C = context.RequestData.ReadUInt32();
-            uint unknwon20 = context.RequestData.ReadUInt32();
-            uint unknwon24 = context.RequestData.ReadUInt32();
-            uint unknwon28 = context.RequestData.ReadUInt32();
-            uint unknwon2C = context.RequestData.ReadUInt32();
-            uint unknwon30 = context.RequestData.ReadUInt32();
-            uint transformFlags = context.RequestData.ReadUInt32(); // ?
-            uint unknwon38 = context.RequestData.ReadUInt32();
-            uint unknwon3C = context.RequestData.ReadUInt32();
+            AndroidFence nativeSync = context.RequestData.ReadStruct<AndroidFence>();
+            Rect cropRegion = context.RequestData.ReadStruct<Rect>();
 
-            bool flipX = (transformFlags & 1u) != 0;
-            bool flipY = (transformFlags & 2u) != 0;
+            NativeWindowTransform transform = (NativeWindowTransform)context.RequestData.ReadUInt32();
+            int swapInterval = context.RequestData.ReadInt32();
+            int padding = context.RequestData.ReadInt32();
 
-            context.Device.System.ViServerS.PresentFramebuffer(context.Device.Gpu, flipX, flipY);
-            context.Device.Statistics.RecordGameFrameTime();
+            long sharedLayerHandle = context.RequestData.ReadInt64();
+            ulong slot = context.RequestData.ReadUInt64();
+
+            context.Device.System.ViServerS.QueueFrameBuffer(sharedLayerHandle, (int)slot, cropRegion, transform, swapInterval, nativeSync);
 
             return ResultCode.Success;
         }
 
         [CommandCmif(8256)] // 4.0.0+
-        // GetSharedFrameBufferAcquirableEvent()
+        // GetSharedFrameBufferAcquirableEvent(nn::vi::fbshare::SharedLayerHandle) -> handle<copy>
         public ResultCode GetSharedFrameBufferAcquirableEvent(ServiceCtx context)
         {
             if (_sharedFramebufferAcquirableEventHandle == 0)
@@ -145,6 +185,18 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
             }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_sharedFramebufferAcquirableEventHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(8258)] // 5.0.0+
+        // CancelSharedFrameBuffer(nn::vi::fbshare::SharedLayerHandle, u64)
+        public ResultCode CancelSharedFrameBuffer(ServiceCtx context)
+        {
+            long sharedLayerHandle = context.RequestData.ReadInt64();
+            ulong slot = context.RequestData.ReadUInt64();
+
+            context.Device.System.ViServerS.CancelFrameBuffer(sharedLayerHandle, (int)slot);
 
             return ResultCode.Success;
         }
