@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Lbl;
 using Ryujinx.Horizon.Sdk.Sf;
@@ -8,6 +9,15 @@ namespace Ryujinx.Horizon.Lbl.Ipc
     {
         private bool _vrModeEnabled;
         private float _currentBrightnessSettingForVrMode;
+
+        [CmifCommand(1)]
+        public Result LoadCurrentSetting()
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceLbl);
+            // NOTE: Stubbed in system module.
+
+            return Result.Success;
+        }
 
         [CmifCommand(17)]
         public Result SetBrightnessReflectionDelayLevel(float unknown0, float unknown1)

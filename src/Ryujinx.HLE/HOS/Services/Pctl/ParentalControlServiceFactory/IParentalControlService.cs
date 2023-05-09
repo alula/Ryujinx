@@ -1,5 +1,8 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Arp;
+using Ryujinx.Horizon.Common;
 using System;
 using static LibHac.Ns.ApplicationControlProperty;
 
@@ -21,6 +24,15 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         private readonly bool _stereoVisionRestrictionConfigurable = true;
         private bool _stereoVisionRestriction = false;
 #pragma warning restore IDE0052, CS0414
+
+        private KEvent _synchronizationEvent;
+        private int    _synchronizationEventHandle;
+
+        private KEvent _unlinkedEvent;
+        private int    _unlinkedEventHandle;
+
+        private KEvent _playTimerRequestSuspensionEvent;
+        private int    _playTimerRequestSuspensionEventHandle;
 
         public IParentalControlService(ServiceCtx context, ulong pid, bool withInitialize, int permissionFlag)
         {
@@ -97,11 +109,53 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
             return ResultCode.Success;
         }
 
+        [CommandCmif(1006)]
+        // IsRestrictionTemporaryUnlocked() -> b8
+        public ResultCode IsRestrictionTemporaryUnlocked(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(1017)] // 10.0.0+
         // EndFreeCommunication()
         public ResultCode EndFreeCommunication(ServiceCtx context)
         {
             _freeCommunicationEnabled = false;
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1032)]
+        // GetSafetyLevel() -> u32
+        public ResultCode GetSafetyLevel(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1035)]
+        // GetCurrentSettings() -> nn::pctl::RestrictionSettings
+        public ResultCode GetCurrentSettings(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1039)]
+        // GetFreeCommunicationApplicationListCount() -> u32
+        public ResultCode GetFreeCommunicationApplicationListCount(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
 
             return ResultCode.Success;
         }
@@ -233,6 +287,88 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
             context.ResponseData.Write(isStereoVisionPermitted);
 
             return resultCode;
+        }
+
+        [CommandCmif(1403)]
+        // IsPairingActive() -> b8
+        public ResultCode IsPairingActive(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1432)]
+        // GetSynchronizationEvent() -> handle<copy>
+        public ResultCode GetSynchronizationEvent(ServiceCtx context)
+        {
+            if (_synchronizationEventHandle == 0)
+            {
+                if (context.Process.HandleTable.GenerateHandle(_synchronizationEvent.ReadableEvent, out _synchronizationEventHandle) != Result.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_synchronizationEventHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1456)]
+        // GetPlayTimerSettings() -> nn::pctl::PlayTimerSettings
+        public ResultCode GetPlayTimerSettings(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1457)]
+        // GetPlayTimerEventToRequestSuspension() -> handle<copy>
+        public ResultCode GetPlayTimerEventToRequestSuspension(ServiceCtx context)
+        {
+            if (_playTimerRequestSuspensionEventHandle == 0)
+            {
+                if (context.Process.HandleTable.GenerateHandle(_playTimerRequestSuspensionEvent.ReadableEvent, out _playTimerRequestSuspensionEventHandle) != Result.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_playTimerRequestSuspensionEventHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1458)] // 4.0.0+
+        // IsPlayTimerAlarmDisabled() -> b8
+        public ResultCode IsPlayTimerAlarmDisabled(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1473)]
+        // GetUnlinkedEvent() -> handle<copy>
+        public ResultCode GetUnlinkedEvent(ServiceCtx context)
+        {
+            if (_unlinkedEventHandle == 0)
+            {
+                if (context.Process.HandleTable.GenerateHandle(_unlinkedEvent.ReadableEvent, out _unlinkedEventHandle) != Result.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_unlinkedEventHandle);
+
+            return ResultCode.Success;
         }
 
         private ResultCode IsStereoVisionPermittedImpl()
