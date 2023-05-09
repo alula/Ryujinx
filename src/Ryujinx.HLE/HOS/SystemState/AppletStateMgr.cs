@@ -12,6 +12,8 @@ namespace Ryujinx.HLE.HOS.SystemState
 
         public KEvent MessageEvent { get; }
 
+        public KEvent AcquiredSleepLockEvent { get; }
+
         public IdDictionary AppletResourceUserIds { get; }
 
         public IdDictionary IndirectLayerHandles { get; }
@@ -20,6 +22,8 @@ namespace Ryujinx.HLE.HOS.SystemState
         {
             Messages = new ConcurrentQueue<AppletMessage>();
             MessageEvent = new KEvent(system.KernelContext);
+
+            AcquiredSleepLockEvent = new KEvent(system.KernelContext);
 
             AppletResourceUserIds = new IdDictionary();
             IndirectLayerHandles = new IdDictionary();

@@ -1369,6 +1369,14 @@ namespace Ryujinx.UI
             RunApplication(contentPath);
         }
 
+        private void Start_QLaunch(object sender, EventArgs args)
+        {
+            string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001000, StorageId.BuiltInSystem, NcaContentType.Program);
+            Logger.Info?.Print(LogClass.Application, $"Attempting to launch QLaunch: {contentPath}");
+
+            RunApplication(contentPath);
+        }
+
         private void Open_Ryu_Folder(object sender, EventArgs args)
         {
             OpenHelper.OpenFolder(AppDataManager.BaseDirPath);

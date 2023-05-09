@@ -65,6 +65,16 @@
                                 <signal name="activate" handler="Load_Mii_Edit_Applet" swapped="no"/>
                               </object>
                             </child>
+                            <child>
+                              <object class="GtkMenuItem" id="StartQLaunch">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Start QLaunch</property>
+                                <property name="label" translatable="yes">Start QLaunch</property>
+                                <property name="use-underline">True</property>
+                                <signal name="activate" handler="Start_QLaunch" swapped="no"/>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
