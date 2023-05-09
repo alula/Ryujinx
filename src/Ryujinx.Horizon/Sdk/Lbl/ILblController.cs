@@ -5,6 +5,7 @@ namespace Ryujinx.Horizon.Sdk.Lbl
 {
     interface ILblController : IServiceObject
     {
+        Result LoadCurrentSetting();
         Result SetBrightnessReflectionDelayLevel(float unknown0, float unknown1);
         Result GetBrightnessReflectionDelayLevel(out float unknown1, float unknown0);
         Result SetCurrentBrightnessMapping(float unknown0, float unknown1, float unknown2);

@@ -7,6 +7,7 @@ using LibHac.Ncm;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Settings.Types;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
 using System.IO;
@@ -82,6 +83,28 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             writer.Write(Encoding.ASCII.GetBytes(Build));
 
             context.Memory.Write(replyPos, ms.ToArray());
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(17)]
+        // GetAccountSettings() -> nn::settings::system::AccountSettings
+        public ResultCode GetAccountSettings(ServiceCtx context)
+        {
+            context.ResponseData.WriteStruct(new AccountSettings());
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(21)]
+        // GetEulaVersions() -> (u32, buffer<nn::settings::system::EulaVersion, 6>)
+        public ResultCode GetEulaVersions(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
 
             return ResultCode.Success;
         }

@@ -22,6 +22,29 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                 miiEditInputData[0] = 0x03; // Hardcoded unknown value.
 
                 _appletStandalone.InputData.Enqueue(miiEditInputData);
+            } else if (context.Device.Processes.ActiveApplication.ProgramId == 0x010000000000100a)
+            {
+                // Create MiiEdit data.
+                _appletStandalone = new AppletStandalone()
+                {
+                    AppletId          = AppletId.LibAppletWeb,
+                    LibraryAppletMode = LibraryAppletMode.AllForeground
+                };
+
+                // todo
+            } else if (context.Device.Processes.ActiveApplication.ProgramId == 0x0100000000001003)
+            {
+                // Create MiiEdit data.
+                _appletStandalone = new AppletStandalone()
+                {
+                    AppletId          = AppletId.Controller,
+                    LibraryAppletMode = LibraryAppletMode.AllForeground
+                };
+
+                byte[] miiEditInputData = new byte[0x100];
+                miiEditInputData[0] = 0x03; // Hardcoded unknown value.
+
+                _appletStandalone.InputData.Enqueue(miiEditInputData);
             }
             else
             {

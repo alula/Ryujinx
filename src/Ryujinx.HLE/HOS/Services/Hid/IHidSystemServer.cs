@@ -1,13 +1,23 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
 using Ryujinx.HLE.HOS.Services.Hid.Types;
+using Ryujinx.Horizon.Common;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
     [Service("hid:sys")]
     class IHidSystemServer : IpcService
     {
-        public IHidSystemServer(ServiceCtx context) { }
+        private KEvent _joyDetachOnBluetoothOffEvent;
+        private int    _joyDetachOnBluetoothOffEventHandle;
+
+        public IHidSystemServer(ServiceCtx context)
+        {
+            _joyDetachOnBluetoothOffEvent = new KEvent(context.Device.System.KernelContext);
+        }
 
         [CommandCmif(303)]
         // ApplyNpadSystemCommonPolicy(u64)
@@ -61,6 +71,43 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             context.ResponseData.Write((byte)appletFooterUiType);
 
             return resultCode;
+        }
+
+        [CommandCmif(751)]
+        // AcquireJoyDetachOnBluetoothOffEventHandle(nn::applet::AppletResourceUserId, pid) -> handle<copy>
+        public ResultCode AcquireJoyDetachOnBluetoothOffEventHandle(ServiceCtx context)
+        {
+            if (_joyDetachOnBluetoothOffEventHandle == 0)
+            {
+                if (context.Process.HandleTable.GenerateHandle(_joyDetachOnBluetoothOffEvent.ReadableEvent, out _joyDetachOnBluetoothOffEventHandle) != Result.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_joyDetachOnBluetoothOffEventHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(850)]
+        // IsUsbFullKeyControllerEnabled() -> bool
+        public ResultCode IsUsbFullKeyControllerEnabled(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1153)]
+        // GetTouchScreenDefaultConfiguration() -> unknown
+        public ResultCode GetTouchScreenDefaultConfiguration(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+
+            return ResultCode.Success;
         }
 
         private ResultCode GetAppletFooterUiTypeImpl(ServiceCtx context, out AppletFooterUiType appletFooterUiType)
