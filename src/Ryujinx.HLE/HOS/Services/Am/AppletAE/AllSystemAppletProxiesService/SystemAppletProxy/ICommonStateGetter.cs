@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetBootMode() -> u8
         public ResultCode GetBootMode(ServiceCtx context)
         {
-            context.ResponseData.Write((byte)0); //Unknown value.
+            context.ResponseData.Write((byte)0); // PmBootMode_Normal
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -131,6 +131,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
+            _acquiredSleepLockEvent.ReadableEvent.Signal();
+
             return ResultCode.Success;
         }
 
@@ -147,6 +149,30 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_acquiredSleepLockEventHandle);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(20)]
+        // PushToGeneralChannel(object<nn::am::service::IStorage>)
+        public ResultCode PushInData(ServiceCtx context)
+        {
+            IStorage data = GetObject<IStorage>(context, 0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(31)]
+        // GetReaderLockAccessorEx(u32) -> object<nn::am::service::ILockAccessor>
+        public ResultCode GetReaderLockAccessorEx(ServiceCtx context)
+        {
+            int lockId = context.RequestData.ReadInt32();
+
+            MakeObject(context, new ILockAccessor(lockId, context.Device.System));
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 

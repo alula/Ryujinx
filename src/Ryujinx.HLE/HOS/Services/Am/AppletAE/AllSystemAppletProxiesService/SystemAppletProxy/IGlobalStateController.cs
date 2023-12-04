@@ -16,6 +16,17 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             _hdcpAuthenticationFailedEvent = new KEvent(context.Device.System.KernelContext);
         }
 
+        [CommandCmif(14)]
+        // ShouldSleepOnBoot() -> bool
+        public ResultCode ShouldSleepOnBoot(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(15)]
         // GetHdcpAuthenticationFailedEvent() -> handle<copy>
         public ResultCode GetHdcpAuthenticationFailedEvent(ServiceCtx context)

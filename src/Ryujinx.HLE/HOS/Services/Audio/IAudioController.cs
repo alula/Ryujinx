@@ -7,6 +7,46 @@ namespace Ryujinx.HLE.HOS.Services.Audio
     {
         public IAudioController(ServiceCtx context) { }
 
+        [CommandCmif(9)]
+        // GetAudioOutputMode(s32) -> s32
+        public ResultCode GetAudioOutputMode(ServiceCtx context)
+        {
+            context.ResponseData.Write(0); // todo?
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAudio);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(10)]
+        // SetAudioOutputMode(s32, s32)
+        public ResultCode SetAudioOutputMode(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceAudio);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(11)]
+        // SetForceMutePolicy(u32)
+        public ResultCode SetForceMutePolicy(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceAudio);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(12)]
+        // GetForceMutePolicy() -> u32
+        public ResultCode GetForceMutePolicy(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAudio);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(13)]
         // GetOutputModeSetting(u32) -> u32
         public ResultCode GetOutputModeSetting(ServiceCtx context)

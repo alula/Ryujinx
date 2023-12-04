@@ -14,9 +14,23 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         private KEvent _joyDetachOnBluetoothOffEvent;
         private int    _joyDetachOnBluetoothOffEventHandle;
 
+        private IHidServer _hidServer;
+
         public IHidSystemServer(ServiceCtx context)
         {
             _joyDetachOnBluetoothOffEvent = new KEvent(context.Device.System.KernelContext);
+            _hidServer                    = new IHidServer(context);
+        }
+
+        [CommandCmif(301)]
+        // ActivateNpadSystem(u32)
+        public ResultCode ActivateNpadSystem(ServiceCtx context)
+        {
+            uint npadSystem = context.RequestData.ReadUInt32();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { npadSystem });
+
+            return ResultCode.Success;
         }
 
         [CommandCmif(303)]
@@ -74,6 +88,26 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             context.ResponseData.Write((byte)appletFooterUiType);
 
             return resultCode;
+        }
+
+        [CommandCmif(321)]
+        // GetUniquePadsFromNpad(u32) -> (u64, buffer<nn::hid::system::UniquePadId[], 0xa>)
+        public ResultCode GetUniquePadsFromNpad(ServiceCtx context)
+        {
+            context.ResponseData.Write(0L);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(703)]
+        // GetUniquePadIds() -> (u64, buffer<nn::hid::system::UniquePadId[], 0xa>)
+        public ResultCode GetUniquePadIds(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+
+            context.ResponseData.Write(0L);
+
+            return ResultCode.Success;
         }
 
         [CommandCmif(751)]

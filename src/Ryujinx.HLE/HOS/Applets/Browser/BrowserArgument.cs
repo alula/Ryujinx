@@ -1,6 +1,9 @@
+﻿using Ryujinx.Common;
+using Ryujinx.Common.Memory;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -28,6 +31,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
             { WebArgTLVType.SystemDataId,                   typeof(ulong) },
             { WebArgTLVType.Whitelist,                      typeof(string) },
             { WebArgTLVType.NewsFlag,                       typeof(bool) },
+            { WebArgTLVType.UnknownFlag0xD,                 typeof(bool) },
             { WebArgTLVType.UserID,                         typeof(UserId) },
             { WebArgTLVType.ScreenShotEnabled,              typeof(bool) },
             { WebArgTLVType.EcClientCertEnabled,            typeof(bool) },
@@ -81,6 +85,37 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
             }
 
             return (header.ShimKind, browserArguments);
+        }
+
+        public static byte[] BuildArguments(ShimKind shimKind, List<BrowserArgument> arguments)
+        {
+            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using BinaryWriter writer = new(stream);
+
+            WebArgHeader header = new()
+            {
+                ShimKind = shimKind,
+                Padding = 0,
+                Count = (ushort)arguments.Count
+            };
+
+            writer.WriteStruct(header);
+
+            foreach (BrowserArgument argument in arguments)
+            {
+                WebArgTLV tlv = new()
+                {
+                    Type = (ushort)argument.Type,
+                    Size = (ushort)argument.Value.Length
+                };
+
+                writer.WriteStruct(tlv);
+                writer.Write(argument.Value);
+            }
+
+            writer.Write(new byte[0x2000 - writer.BaseStream.Position]);
+
+            return stream.ToArray();
         }
 
         public object GetValue()

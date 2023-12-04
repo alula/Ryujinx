@@ -126,7 +126,8 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             ulong displayInfoBuffer = context.Request.ReceiveBuff[0].Position;
 
             // TODO: Determine when more than one display is needed.
-            ulong displayCount = 1;
+            // qlaunch expects 2, otherwise it crashes (sub_71002C4430 in 3.0.2 qlaunch)
+            ulong displayCount = 2;
 
             for (int i = 0; i < (int)displayCount; i++)
             {

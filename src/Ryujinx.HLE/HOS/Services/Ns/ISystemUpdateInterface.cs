@@ -16,6 +16,15 @@ namespace Ryujinx.HLE.HOS.Services.Ns
             _systemUpdateNotificationEvent = new KEvent(context.Device.System.KernelContext);
         }
 
+        [CommandCmif(0)]
+        // GetBackgroundNetworkUpdateState() -> u8
+        public ResultCode GetBackgroundNetworkUpdateState(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(9)]
         // GetSystemUpdateNotificationEventForContentDelivery() -> handle<copy>
         public ResultCode GetSystemUpdateNotificationEventForContentDelivery(ServiceCtx context)

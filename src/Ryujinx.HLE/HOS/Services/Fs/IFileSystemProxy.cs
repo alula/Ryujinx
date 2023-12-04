@@ -13,6 +13,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using static Ryujinx.HLE.Utilities.StringUtils;
 using GameCardHandle = System.UInt32;
@@ -784,13 +785,17 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // OpenDataStorageByCurrentProcess() -> object<nn::fssrv::sf::IStorage> dataStorage
         public ResultCode OpenDataStorageByCurrentProcess(ServiceCtx context)
         {
-            var storage = context.Device.FileSystem.GetRomFs(_pid).AsStorage(true);
-            using var sharedStorage = new SharedRef<LibHac.Fs.IStorage>(storage);
-            using var sfStorage = new SharedRef<IStorage>(new StorageInterfaceAdapter(ref sharedStorage.Ref));
+            try {
+                var storage = context.Device.FileSystem.GetRomFs(_pid).AsStorage(true);
+                using var sharedStorage = new SharedRef<LibHac.Fs.IStorage>(storage);
+                using var sfStorage = new SharedRef<IStorage>(new StorageInterfaceAdapter(ref sharedStorage.Ref));
 
-            MakeObject(context, new FileSystemProxy.IStorage(ref sfStorage.Ref));
+                MakeObject(context, new FileSystemProxy.IStorage(ref sfStorage.Ref));
 
-            return ResultCode.Success;
+                return ResultCode.Success;
+            } catch (KeyNotFoundException) {
+                return ResultCode.PathDoesNotExist;
+            }
         }
 
         [CommandCmif(202)]

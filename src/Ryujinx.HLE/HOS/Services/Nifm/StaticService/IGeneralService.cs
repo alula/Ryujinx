@@ -91,6 +91,17 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return ResultCode.Success;
         }
 
+        [CommandCmif(6)]
+        // EnumerateNetworkInterfaces() -> (u32, buffer<nn::nifm::detail::sf::NetworkInterfaceInfo, 0xa>)
+        public ResultCode EnumerateNetworkInterfaces(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(12)]
         // GetCurrentIpAddress() -> nn::nifm::IpV4Address
         public ResultCode GetCurrentIpAddress(ServiceCtx context)
@@ -176,6 +187,22 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return ResultCode.Success;
         }
 
+        [CommandCmif(26)]
+        // SetExclusiveClient(buffer<nn::nifm::ClientId, 0x19, 4>)
+        public ResultCode SetExclusiveClient(ServiceCtx context)
+        {
+            ulong position = context.Request.PtrBuff[0].Position;
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
+            ulong size = context.Request.PtrBuff[0].Size;
+#pragma warning restore IDE0059
+
+            int clientId = context.Memory.Read<int>(position);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
+
+            return ResultCode.Success;
+        }
+
         private (IPInterfaceProperties, UnicastIPAddressInformation) GetLocalInterface(ServiceCtx context)
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
@@ -209,7 +236,8 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             {
                 NetworkChange.NetworkAddressChanged -= LocalInterfaceCacheHandler;
 
-                GeneralServiceManager.Remove(_generalServiceDetail.ClientId);
+                if (_generalServiceDetail.ClientId < GeneralServiceManager.Count)
+                    GeneralServiceManager.Remove(_generalServiceDetail.ClientId);
             }
         }
     }
