@@ -8,6 +8,23 @@ namespace Ryujinx.HLE.HOS.Applets
 {
     static class AppletManager
     {
+        private static readonly Dictionary<AppletId, Type> _appletMapping;
+
+        static AppletManager()
+        {
+            _appletMapping = new Dictionary<AppletId, Type>
+            {
+                { AppletId.Error,            typeof(ErrorApplet)            },
+                { AppletId.PlayerSelect,     typeof(PlayerSelectApplet)     },
+                { AppletId.Controller,       typeof(ControllerApplet)       },
+                { AppletId.SoftwareKeyboard, typeof(SoftwareKeyboardApplet) },
+                { AppletId.NetConnect,       typeof(NetConnectApplet)       },
+                { AppletId.LibAppletWeb,     typeof(BrowserApplet)          },
+                { AppletId.LibAppletShop,    typeof(BrowserApplet)          },
+                { AppletId.LibAppletOff,     typeof(BrowserApplet)          },
+            };
+        }
+
         public static IApplet Create(AppletId applet, Horizon system)
         {
             switch (applet)

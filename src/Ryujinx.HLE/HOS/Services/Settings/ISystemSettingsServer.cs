@@ -5,12 +5,14 @@ using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
 using LibHac.Ncm;
 using LibHac.Tools.FsSystem.NcaUtils;
+using LibHac.Util;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Settings.Types;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Settings
@@ -19,6 +21,15 @@ namespace Ryujinx.HLE.HOS.Services.Settings
     class ISystemSettingsServer : IpcService
     {
         public ISystemSettingsServer(ServiceCtx context) { }
+
+        [CommandCmif(0)]
+        // SetLanguageCode(u64)
+        public ResultCode GetLanguageCode(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
 
         [CommandCmif(3)]
         // GetFirmwareVersion() -> buffer<nn::settings::system::FirmwareVersion, 0x1a, 0x100>
@@ -87,6 +98,26 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
+        [CommandCmif(7)]
+        // GetLockScreenFlag() -> bool
+        public ResultCode GetLockScreenFlag(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(8)]
+        // SetLockScreenFlag(bool)
+        public ResultCode SetLockScreenFlag(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(17)]
         // GetAccountSettings() -> nn::settings::system::AccountSettings
         public ResultCode GetAccountSettings(ServiceCtx context)
@@ -102,9 +133,54 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         // GetEulaVersions() -> (u32, buffer<nn::settings::system::EulaVersion, 6>)
         public ResultCode GetEulaVersions(ServiceCtx context)
         {
-            context.ResponseData.Write(0);
-
             Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
+            ulong bufferLen = context.Request.ReceiveBuff[0].Size;
+
+            if ((ulong)Unsafe.SizeOf<EulaVersion>() > bufferLen)
+            {
+                return ResultCode.NullEULAVersionBuffer;
+            }
+
+            // 00000100
+            // 01000000
+            // 01000000
+            // 00000000
+            // 0000000000000000
+            // 0C00000000000000
+            // 84323302BAEA0816C18BCE028732A036
+            var eulaVersion = new EulaVersion
+            {
+                Version = 0x10000,
+                RegionCode = 1,
+                ClockType = 1,
+                NetworkSystemClock = 0,
+                SteadyClock = new Time.Clock.SteadyClockTimePoint {
+                    TimePoint = 0xc,
+                    ClockSourceId = new UInt128(0x36a0328708bc18c1, 0x1608ea2b023284)
+                }
+            };
+
+            context.Memory.Write(bufferPosition, eulaVersion);
+
+            context.ResponseData.Write(1);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(22)]
+        // SetEulaVersions(u32, buffer<nn::settings::system::EulaVersion, 5>)
+        public ResultCode SetEulaVersions(ServiceCtx context)
+        {
+            ulong bufferPosition = context.Request.SendBuff[0].Position;
+            ulong bufferLen = context.Request.SendBuff[0].Size;
+
+            byte[] eulaVersionBuffer = new byte[bufferLen];
+
+            context.Memory.Read(bufferPosition, eulaVersionBuffer);
+
+            Logger.Info?.PrintStub(LogClass.ServiceSet, $"EulaVersion: {eulaVersionBuffer.ToHexString()}");
 
             return ResultCode.Success;
         }
@@ -125,6 +201,39 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             int colorSetId = context.RequestData.ReadInt32();
 
             context.Device.System.State.ThemeColor = (ColorSet)colorSetId;
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(29)]
+        // GetNotificationSettings() -> nn::settings::system::NotificationSettings
+        public ResultCode GetNotificationSettings(ServiceCtx context)
+        {
+            context.ResponseData.WriteStruct(new NotificationSettings());
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(30)]
+        // SetNotificationSettings(nn::settings::system::NotificationSettings)
+        public ResultCode SetNotificationSettings(ServiceCtx context)
+        {
+            NotificationSettings notificationSettings = context.RequestData.ReadStruct<NotificationSettings>();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet, $"NotificationSettings: {notificationSettings}");
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(31)]
+        // GetAccountNotificationSettings(buffer<nn::settings::system::AccountNotificationSettings, 6>) -> s32
+        public ResultCode GetAccountNotificationSettings(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
 
             return ResultCode.Success;
         }
@@ -244,6 +353,41 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
+        [CommandCmif(39)]
+        // GetTvSettings() -> nn::settings::system::TvSettings
+        public ResultCode GetTvSettings(ServiceCtx context)
+        {
+            var settings = new TvSettings();
+
+            context.ResponseData.WriteStruct(settings);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(47)]
+        // GetQuestFlag() -> bool
+        public ResultCode GetQuestFlag(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(57)]
+        // SetRegionCode(s32)
+        public ResultCode SetRegionCode(ServiceCtx context)
+        {
+            int regionCode = context.RequestData.ReadInt32();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(60)]
         // IsUserSystemClockAutomaticCorrectionEnabled() -> bool
         public ResultCode IsUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
@@ -263,6 +407,74 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             context.ResponseData.Write(false);
 
             Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(63)]
+        // GetPrimaryAlbumStorage() -> nn::settings::system::PrimaryAlbumStorage
+        public ResultCode GetPrimaryAlbumStorage(ServiceCtx context)
+        {
+            context.ResponseData.WriteStruct(PrimaryAlbumStorage.SdCard);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(64)]
+        // SetPrimaryAlbumStorage(nn::settings::system::PrimaryAlbumStorage)
+        public ResultCode SetPrimaryAlbumStorage(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(71)]
+        // GetSleepSettings() -> nn::settings::system::SleepSettings
+        public ResultCode GetSleepSettings(ServiceCtx context)
+        {
+            var sleepSettings = new SleepSettings();
+
+            context.ResponseData.WriteStruct(sleepSettings);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(72)]
+        // SetSleepSettings(nn::settings::system::SleepSettings)
+        public ResultCode SetSleepSettings(ServiceCtx context)
+        {
+            SleepSettings sleepSettings = context.RequestData.ReadStruct<SleepSettings>();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet, $"SleepSettings: {sleepSettings}");
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(75)]
+        // GetInitialLaunchSettings() -> nn::settings::system::InitialLaunchSettings
+        public ResultCode GetInitialLaunchSettings(ServiceCtx context)
+        {
+            var launchSettings = new InitialLaunchSettings();
+            launchSettings.Flags |= InitialLaunchFlag.InitialLaunchCompletionFlag;
+            launchSettings.Flags |= InitialLaunchFlag.InitialLaunchUserAdditionFlag;
+            launchSettings.Flags |= InitialLaunchFlag.InitialLaunchTimestampFlag;
+            context.ResponseData.WriteStruct(launchSettings);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(76)]
+        // SetInitialLaunchSettings(nn::settings::system::InitialLaunchSettings)
+        public ResultCode SetInitialLaunchSettings(ServiceCtx context)
+        {
+            InitialLaunchSettings initialLaunchSettings = context.RequestData.ReadStruct<InitialLaunchSettings>();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet, $"InitialLaunchSettings.Flags: 0x{initialLaunchSettings.Flags:X}");
 
             return ResultCode.Success;
         }
@@ -305,6 +517,15 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
+        [CommandCmif(79)]
+        // GetProductModel() -> s32
+        public ResultCode GetProductModel(ServiceCtx context)
+        {
+            context.ResponseData.Write(1); // ProductModel::Nx
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(90)]
         // GetMiiAuthorId() -> nn::util::Uuid
         public ResultCode GetMiiAuthorId(ServiceCtx context)
@@ -313,6 +534,46 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             //       Doesn't occur in our case.
 
             context.ResponseData.Write(Mii.Helper.GetDeviceId());
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(95)]
+        // GetAutoUpdateEnableFlag() -> bool
+        public ResultCode GetAutoUpdateEnableFlag(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(96)]
+        // SetAutoUpdateEnableFlag(bool)
+        public ResultCode SetAutoUpdateEnableFlag(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(99)]
+        // GetBatteryPercentageFlag() -> bool
+        public ResultCode GetBatteryPercentageFlag(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(100)]
+        // SetBatteryPercentageFlag(bool)
+        public ResultCode SetBatteryPercentageFlag(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
 
             return ResultCode.Success;
         }

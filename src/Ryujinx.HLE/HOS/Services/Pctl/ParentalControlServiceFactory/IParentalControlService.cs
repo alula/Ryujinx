@@ -39,6 +39,10 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
             _pid = pid;
             _permissionFlag = permissionFlag;
 
+            _synchronizationEvent = new KEvent(context.Device.System.KernelContext);
+            _unlinkedEvent = new KEvent(context.Device.System.KernelContext);
+            _playTimerRequestSuspensionEvent = new KEvent(context.Device.System.KernelContext);
+
             if (withInitialize)
             {
                 Initialize(context);
@@ -112,6 +116,17 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         [CommandCmif(1006)]
         // IsRestrictionTemporaryUnlocked() -> b8
         public ResultCode IsRestrictionTemporaryUnlocked(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1010)]
+        // IsRestrictedSystemSettingsEntered() -> b8
+        public ResultCode IsRestrictedSystemSettingsEntered(ServiceCtx context)
         {
             context.ResponseData.Write(false);
 
@@ -313,6 +328,35 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
             }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_synchronizationEventHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1451)]
+        // StartPlayTimer()
+        public ResultCode StartPlayTimer(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1452)]
+        // StopPlayTimer()
+        public ResultCode StopPlayTimer(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1455)]
+        // IsRestrictedByPlayTimer() -> b8
+        public ResultCode IsRestrictedByPlayTimer(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
 
             return ResultCode.Success;
         }

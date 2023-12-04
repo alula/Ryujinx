@@ -1,3 +1,5 @@
+﻿using LibHac.Util;
+using Ryujinx.Common.Logging;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
@@ -52,6 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
         {
             if (this.TryPop(out byte[] item))
             {
+                Logger.Info?.Print(LogClass.ServiceAm, $"Pop applet session data: {item.ToHexString()}");
                 return item;
             }
 

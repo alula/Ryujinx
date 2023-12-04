@@ -236,6 +236,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         public ResultCode IsSystemBufferSharingEnabled(ServiceCtx context)
         {
             // NOTE: Service checks a private field and return an error if the SystemBufferSharing is disabled.
+            
+            // todo check if we're not an AppletId.Application   
 
             return ResultCode.NotImplemented;
         }
@@ -267,6 +269,20 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             return ResultCode.Success;
         }
 
+        [CommandCmif(60)]
+        // OverrideAutoSleepTimeAndDimmingTime(i32, i32, i32, i32)
+        public ResultCode OverrideAutoSleepTimeAndDimmingTime(ServiceCtx context)
+        {
+            int unk1 = context.RequestData.ReadInt32();
+            int unk2 = context.RequestData.ReadInt32();
+            int unk3 = context.RequestData.ReadInt32();
+            int unk4 = context.RequestData.ReadInt32();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm, new { unk1, unk2, unk3, unk4 });
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(62)]
         // SetIdleTimeDetectionExtension(u32)
         public ResultCode SetIdleTimeDetectionExtension(ServiceCtx context)
@@ -287,6 +303,17 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             context.ResponseData.Write(_idleTimeDetectionExtension);
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm, new { _idleTimeDetectionExtension });
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(64)]
+        // SetInputDetectionSourceSet(u32)
+        public ResultCode SetInputDetectionSourceSet(ServiceCtx context)
+        {
+            uint inputDetectionSourceSet = context.RequestData.ReadUInt32();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm, new { inputDetectionSourceSet });
 
             return ResultCode.Success;
         }

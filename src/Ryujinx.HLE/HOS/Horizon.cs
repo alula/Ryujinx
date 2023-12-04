@@ -91,6 +91,9 @@ namespace Ryujinx.HLE.HOS
 
         internal KEvent DisplayResolutionChangeEvent { get; private set; }
 
+        internal KEvent GeneralChannelEvent { get; private set; }
+        internal Queue<byte[]> GeneralChannelData { get; private set; } = new();
+
         public KeySet KeySet => Device.FileSystem.KeySet;
 
         private bool _isDisposed;
@@ -110,6 +113,9 @@ namespace Ryujinx.HLE.HOS
         internal ServiceTable ServiceTable { get; private set; }
 
         public bool IsPaused { get; private set; }
+
+        internal IGraphicBufferProducer SharedLayer { get; set; }
+        internal long SharedLayerId;
 
         public Horizon(Switch device)
         {
@@ -177,6 +183,7 @@ namespace Ryujinx.HLE.HOS
             VsyncEvent = new KEvent(KernelContext);
 
             DisplayResolutionChangeEvent = new KEvent(KernelContext);
+            GeneralChannelEvent = new KEvent(KernelContext);
 
             SharedFontManager = new SharedFontManager(device, fontStorage);
             AccountManager = device.Configuration.AccountManager;
@@ -333,6 +340,21 @@ namespace Ryujinx.HLE.HOS
         {
             AppletState.Messages.Enqueue(AppletMessage.Resume);
             AppletState.MessageEvent.ReadableEvent.Signal();
+
+            // 0x534D4153 0x00000001 0x00000002 0x00000001
+            PushToGeneralChannel(new byte[] {
+                0x53, 0x41, 0x4D, 0x53, 0x01, 0x00, 0x00, 0x00,
+                0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+            });
+        }
+
+        public void PushToGeneralChannel(byte[] data)
+        {
+            if (data.Length > 0)
+            {
+                GeneralChannelData.Enqueue(data);
+                GeneralChannelEvent.ReadableEvent.Signal();
+            }
         }
 
         public void ScanAmiibo(int nfpDeviceId, string amiiboId, bool useRandomUuid)
