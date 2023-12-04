@@ -105,6 +105,15 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return ResultCode.Success;
         }
 
+        [CommandCmif(6)]
+        // SetRequirementPreset(u32)
+        public ResultCode SetRequirementPreset(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(11)]
         // SetConnectionConfirmationOption(i8)
         public ResultCode SetConnectionConfirmationOption(ServiceCtx context)

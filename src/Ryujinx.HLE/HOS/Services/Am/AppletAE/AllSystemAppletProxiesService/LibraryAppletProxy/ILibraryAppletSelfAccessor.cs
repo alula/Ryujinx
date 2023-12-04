@@ -1,5 +1,14 @@
-﻿using Ryujinx.Common;
+﻿using LibHac.Util;
+using Ryujinx.Common;
+using Ryujinx.Common.Logging;
+using Ryujinx.Common.Memory;
+using Ryujinx.HLE.HOS.Applets;
+using Ryujinx.HLE.HOS.Applets.Browser;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletProxy
 {
@@ -21,30 +30,38 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                 byte[] miiEditInputData = new byte[0x100];
                 miiEditInputData[0] = 0x03; // Hardcoded unknown value.
 
-                _appletStandalone.InputData.Enqueue(miiEditInputData);
+                _appletStandalone.InputData.AddLast(miiEditInputData);
             } else if (context.Device.Processes.ActiveApplication.ProgramId == 0x010000000000100a)
             {
-                // Create MiiEdit data.
                 _appletStandalone = new AppletStandalone()
                 {
                     AppletId          = AppletId.LibAppletWeb,
-                    LibraryAppletMode = LibraryAppletMode.AllForeground
+                    LibraryAppletMode = LibraryAppletMode.AllForeground,
                 };
+
+                // version = 0x00080000;
+                CommonArguments commonArguments = new()
+                {
+                    Version = 1,
+                    StructureSize = (uint)Marshal.SizeOf(typeof(CommonArguments)),
+                    AppletVersion = 0x00080000,
+                };
+                using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+                using BinaryWriter writer = new(stream);
+                writer.WriteStruct(commonArguments);
 
                 // todo
-            } else if (context.Device.Processes.ActiveApplication.ProgramId == 0x0100000000001003)
-            {
-                // Create MiiEdit data.
-                _appletStandalone = new AppletStandalone()
+                List<BrowserArgument> arguments = new()
                 {
-                    AppletId          = AppletId.Controller,
-                    LibraryAppletMode = LibraryAppletMode.AllForeground
+                    new BrowserArgument(WebArgTLVType.UnknownFlag0xD, BitConverter.GetBytes(true)),
+                    new BrowserArgument(WebArgTLVType.InitialURL, Encoding.UTF8.GetBytes("https://www.google.com/")),
+                    new BrowserArgument(WebArgTLVType.Whitelist, Encoding.UTF8.GetBytes("^http*"))
                 };
 
-                byte[] miiEditInputData = new byte[0x100];
-                miiEditInputData[0] = 0x03; // Hardcoded unknown value.
+                var argumentData = BrowserArgument.BuildArguments(ShimKind.Web, arguments);
 
-                _appletStandalone.InputData.Enqueue(miiEditInputData);
+                _appletStandalone.InputData.AddLast(stream.ToArray());                
+                _appletStandalone.InputData.AddLast(argumentData);
             }
             else
             {
@@ -56,7 +73,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopInData() -> object<nn::am::service::IStorage>
         public ResultCode PopInData(ServiceCtx context)
         {
-            byte[] appletData = _appletStandalone.InputData.Dequeue();
+            byte[] appletData = _appletStandalone.InputData.First.Value;
+            _appletStandalone.InputData.RemoveFirst();
+
+            // Logger.Info?.Print(LogClass.ServiceAm, $"Applet data: {appletData.ToHexString()}");
 
             if (appletData.Length == 0)
             {
@@ -83,6 +103,32 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             return ResultCode.Success;
         }
 
+        [CommandCmif(12)]
+        // GetMainAppletIdentityInfo() -> nn::am::service::AppletIdentityInfo
+        public ResultCode GetMainAppletIdentityInfo(ServiceCtx context)
+        {
+            AppletIdentifyInfo appletIdentifyInfo = new()
+            {
+                AppletId = AppletId.QLaunch,
+                TitleId = 0x0100000000001000,
+            };
+
+            context.ResponseData.WriteStruct(appletIdentifyInfo);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(13)]
+        // CanUseApplicationCore() -> bool
+        public ResultCode CanUseApplicationCore(ServiceCtx context)
+        {
+            context.ResponseData.Write(true);
+            
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(14)]
         // GetCallerAppletIdentityInfo() -> nn::am::service::AppletIdentityInfo
         public ResultCode GetCallerAppletIdentityInfo(ServiceCtx context)
@@ -95,6 +141,25 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
             context.ResponseData.WriteStruct(appletIdentifyInfo);
 
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(30)]
+        // UnpopInData(nn::am::service::IStorage)
+        public ResultCode UnpopInData(ServiceCtx context)
+        {
+            IStorage data = GetObject<IStorage>(context, 0);
+            
+            _appletStandalone.InputData.AddFirst(data.Data);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(50)]
+        // ReportVisibleError(nn::err::ErrorCode)
+        public ResultCode ReportVisibleError(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
             return ResultCode.Success;
         }
     }

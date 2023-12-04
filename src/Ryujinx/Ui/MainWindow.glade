@@ -75,6 +75,26 @@
                                 <signal name="activate" handler="Start_QLaunch" swapped="no"/>
                               </object>
                             </child>
+                            <child>
+                              <object class="GtkMenuItem" id="StartStarter">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Start Starter</property>
+                                <property name="label" translatable="yes">Start Starter</property>
+                                <property name="use-underline">True</property>
+                                <signal name="activate" handler="Start_Starter" swapped="no"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkMenuItem" id="LoadWebApplet">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Start WebApplet</property>
+                                <property name="label" translatable="yes">Start WebApplet</property>
+                                <property name="use-underline">True</property>
+                                <signal name="activate" handler="Load_Web_Applet" swapped="no"/>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>

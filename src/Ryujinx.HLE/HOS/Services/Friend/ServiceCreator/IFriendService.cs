@@ -371,6 +371,40 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             return ResultCode.Success;
         }
 
+        [CommandCmif(20100)]
+        // GetFriendCount(nn::account::Uid, nn::friends::detail::ipc::SizedFriendFilter, u64, pid) -> i32
+        public ResultCode GetFriendCount(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceFriend);
+
+            return ResultCode.Success;
+        }
+        
+        [CommandCmif(20101)]
+        // GetNewlyFriendCount(nn::account::Uid) -> i32;
+        public ResultCode GetNewlyFriendCount(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceFriend);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(20200)]
+        // GetReceivedFriendRequestCount(nn::account::Uid) -> (i32, i32)
+        public ResultCode GetReceivedFriendRequestCount(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceFriend);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(20701)]
         // GetPlayHistoryStatistics(nn::account::Uid) -> nn::friends::PlayHistoryStatistics
         public ResultCode GetPlayHistoryStatistics(ServiceCtx context)

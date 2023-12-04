@@ -93,6 +93,15 @@ namespace Ryujinx.HLE.HOS.Services.Ns
             return ResultCode.Success;
         }
 
+        [CommandCmif(70)]
+        // ResumeAll()
+        public ResultCode ResumeAll(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceNs);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(505)]
         // GetGameCardMountFailureEvent() -> handle<copy>
         public ResultCode GetGameCardMountFailureEvent(ServiceCtx context)

@@ -66,5 +66,27 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
             return ResultCode.Success;
         }
+
+        [CommandCmif(8250)]
+        // OpenSharedLayer(u64)
+        public ResultCode OpenSharedLayer(ServiceCtx context)
+        {
+            ulong layerId = context.RequestData.ReadUInt64();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceVi);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(8251)]
+        // ConnectSharedLayer(u64)
+        public ResultCode ConnectSharedLayer(ServiceCtx context)
+        {
+            ulong layerId = context.RequestData.ReadUInt64();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceVi);
+
+            return ResultCode.Success;
+        }
     }
 }

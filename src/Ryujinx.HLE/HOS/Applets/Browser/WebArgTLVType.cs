@@ -12,6 +12,7 @@
         ShareStartPage = 0x9,
         Whitelist = 0xA,
         NewsFlag = 0xB,
+        UnknownFlag0xD = 0xD,
         UserID = 0xE,
         AlbumEntry0 = 0xF,
         ScreenShotEnabled = 0x10,
