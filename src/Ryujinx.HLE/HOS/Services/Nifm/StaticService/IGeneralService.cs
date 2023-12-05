@@ -43,6 +43,17 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return ResultCode.Success;
         }
 
+        [CommandCmif(2)]
+        // CreateScanRequest() -> object<nn::nifm::detail::IScanRequest>
+        public ResultCode CreateScanRequest(ServiceCtx context)
+        {
+            MakeObject(context, new IScanRequest(context.Device.System));
+
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(4)]
         // CreateRequest(u32 version) -> object<nn::nifm::detail::IRequest>
         public ResultCode CreateRequest(ServiceCtx context)

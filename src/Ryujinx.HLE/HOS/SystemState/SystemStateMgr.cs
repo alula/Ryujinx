@@ -46,6 +46,7 @@ namespace Ryujinx.HLE.HOS.SystemState
             // TODO: Let user specify fields.
             DesiredKeyboardLayout = (long)KeyboardLayout.Default;
             DeviceNickName = "Ryujinx's Switch";
+            ThemeColor = ColorSet.BasicBlack;
         }
 
         public void SetLanguage(SystemLanguage language)
