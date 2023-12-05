@@ -31,7 +31,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                 miiEditInputData[0] = 0x03; // Hardcoded unknown value.
 
                 _appletStandalone.InputData.AddLast(miiEditInputData);
-            } else if (context.Device.Processes.ActiveApplication.ProgramId == 0x010000000000100a)
+            }
+            else if (context.Device.Processes.ActiveApplication.ProgramId == 0x010000000000100a)
             {
                 _appletStandalone = new AppletStandalone()
                 {
@@ -63,9 +64,64 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                 _appletStandalone.InputData.AddLast(stream.ToArray());                
                 _appletStandalone.InputData.AddLast(argumentData);
             }
+            else if (context.Device.Processes.ActiveApplication.ProgramId == 0x010000000000100d)
+            {
+                _appletStandalone = new AppletStandalone()
+                {
+                    AppletId = AppletId.PhotoViewer,
+                    LibraryAppletMode = LibraryAppletMode.AllForeground,
+                };
+
+                // version = 0x00080000;
+                CommonArguments commonArguments = new()
+                {
+                    Version = 1,
+                    StructureSize = (uint)Marshal.SizeOf(typeof(CommonArguments)),
+                    AppletVersion = 0x1,
+                    PlayStartupSound = true,
+                };
+                using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+                using BinaryWriter writer = new(stream);
+                writer.WriteStruct(commonArguments);
+
+                _appletStandalone.InputData.AddLast(stream.ToArray());
+                _appletStandalone.InputData.AddLast(new byte[1] { 2 });
+            }
+            else if (context.Device.Processes.ActiveApplication.ProgramId == 0x0100000000001013)
+            {
+                _appletStandalone = new AppletStandalone()
+                {
+                    AppletId = AppletId.MyPage,
+                    LibraryAppletMode = LibraryAppletMode.AllForeground,
+                };
+
+                // version = 0x00080000;
+                CommonArguments commonArguments = new()
+                {
+                    Version = 1,
+                    StructureSize = (uint)Marshal.SizeOf(typeof(CommonArguments)),
+                    AppletVersion = 0x1,
+                    PlayStartupSound = true,
+                };
+                using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+                using BinaryWriter writer = new(stream);
+                writer.WriteStruct(commonArguments);
+
+                using MemoryStream baseStream = new(new byte[0xB0 + 0xFF8]);
+                using BinaryWriter baseWriter = new(baseStream);
+
+                baseWriter.Write(7); //Type
+                baseWriter.Write(0); //Padding
+                baseWriter.Write(1L); //UID0
+                baseWriter.Write(0L); //UID1
+                baseWriter.Write(1L); //AccId
+
+                _appletStandalone.InputData.AddLast(stream.ToArray());
+                _appletStandalone.InputData.AddLast(baseStream.ToArray());
+            }
             else
             {
-                throw new NotImplementedException($"{context.Device.Processes.ActiveApplication.ProgramId} applet is not implemented.");
+                throw new NotImplementedException($"{context.Device.Processes.ActiveApplication.ProgramId:X16} applet is not implemented.");
             }
         }
 

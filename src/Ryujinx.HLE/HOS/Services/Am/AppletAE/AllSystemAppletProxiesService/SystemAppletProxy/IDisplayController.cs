@@ -17,6 +17,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             _transferMem = context.Device.System.AppletCaptureBufferTransfer;
         }
 
+        [CommandCmif(7)]
+        public ResultCode GetCallerAppletCaptureImageEx(ServiceCtx context)
+        {
+            context.ResponseData.Write(true);
+            context.ResponseData.Write(0);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(8)] // 2.0.0+
         // TakeScreenShotOfOwnLayer(b8, s32)
         public ResultCode TakeScreenShotOfOwnLayer(ServiceCtx context)

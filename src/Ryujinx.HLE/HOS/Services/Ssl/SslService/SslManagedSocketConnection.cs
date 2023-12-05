@@ -115,11 +115,18 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
         public ResultCode Handshake(string hostName)
         {
-            StartSslOperation();
-            _stream = new SslStream(new NetworkStream(((ManagedSocket)Socket).Socket, false), false, null, null);
-            hostName = RetrieveHostName(hostName);
-            _stream.AuthenticateAsClient(hostName, null, TranslateSslVersion(_sslVersion), false);
-            EndSslOperation();
+            try
+            {
+                StartSslOperation();
+                _stream = new SslStream(new NetworkStream(((ManagedSocket)Socket).Socket, false), false, null, null);
+                hostName = RetrieveHostName(hostName);
+                _stream.AuthenticateAsClient(hostName, null, TranslateSslVersion(_sslVersion), false);
+                EndSslOperation();
+            }
+            catch
+            {
+                return ResultCode.NoSocket;
+            }
 
             return ResultCode.Success;
         }
