@@ -27,25 +27,26 @@ namespace Ryujinx.HLE.HOS.Applets
 
         public static IApplet Create(AppletId applet, Horizon system)
         {
-            switch (applet)
-            {
-                case AppletId.Controller:
-                    return new ControllerApplet(system);
-                case AppletId.Error:
-                    return new ErrorApplet(system);
-                case AppletId.PlayerSelect:
-                    return new PlayerSelectApplet(system);
-                case AppletId.SoftwareKeyboard:
-                    return new SoftwareKeyboardApplet(system);
-                case AppletId.LibAppletWeb:
-                    return new BrowserApplet(system);
-                case AppletId.LibAppletShop:
-                    return new BrowserApplet(system);
-                case AppletId.LibAppletOff:
-                    return new BrowserApplet(system);
-            }
+            // switch (applet)
+            // {
+            //     case AppletId.Controller:
+            //         return new ControllerApplet(system);
+            //     case AppletId.Error:
+            //         return new ErrorApplet(system);
+            //     case AppletId.PlayerSelect:
+            //         return new PlayerSelectApplet(system);
+            //     case AppletId.SoftwareKeyboard:
+            //         return new SoftwareKeyboardApplet(system);
+            //     case AppletId.LibAppletWeb:
+            //         return new BrowserApplet(system);
+            //     case AppletId.LibAppletShop:
+            //         return new BrowserApplet(system);
+            //     case AppletId.LibAppletOff:
+            //         return new BrowserApplet(system);
+            // }
 
-            throw new NotImplementedException($"{applet} applet is not implemented.");
+            // throw new NotImplementedException($"{applet} applet is not implemented.");
+            return new RealApplet(applet, system);
         }
     }
 }
