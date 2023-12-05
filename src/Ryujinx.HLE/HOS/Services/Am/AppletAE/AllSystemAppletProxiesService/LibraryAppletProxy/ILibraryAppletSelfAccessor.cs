@@ -119,6 +119,27 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                 _appletStandalone.InputData.AddLast(stream.ToArray());
                 _appletStandalone.InputData.AddLast(baseStream.ToArray());
             }
+            else if (context.Device.Processes.ActiveApplication.ProgramId == 0x0100000000001006)
+            {
+                _appletStandalone = new AppletStandalone()
+                {
+                    AppletId = AppletId.NetConnect,
+                    LibraryAppletMode = LibraryAppletMode.AllForeground,
+                };
+
+                CommonArguments commonArguments = new()
+                {
+                    Version = 1,
+                    StructureSize = (uint)Marshal.SizeOf(typeof(CommonArguments)),
+                    AppletVersion = 0x1,
+                };
+                using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+                using BinaryWriter writer = new(stream);
+                writer.WriteStruct(commonArguments);
+
+                _appletStandalone.InputData.AddLast(stream.ToArray());
+                _appletStandalone.InputData.AddLast(new byte[0x100]);
+            }
             else
             {
                 throw new NotImplementedException($"{context.Device.Processes.ActiveApplication.ProgramId:X16} applet is not implemented.");
