@@ -27,12 +27,13 @@ namespace Ryujinx.HLE.HOS.Applets
 
         public static IApplet Create(AppletId applet, Horizon system)
         {
-            if (_appletMapping.TryGetValue(applet, out Type appletClass))
-            {
-                return (IApplet)Activator.CreateInstance(appletClass, system);
-            }
+            // if (_appletMapping.TryGetValue(applet, out Type appletClass))
+            // {
+            //     return (IApplet)Activator.CreateInstance(appletClass, system);
+            // }
 
-            throw new NotImplementedException($"{applet} applet is not implemented.");
+            // throw new NotImplementedException($"{applet} applet is not implemented.");
+            return new RealApplet(applet, system);
         }
     }
 }
