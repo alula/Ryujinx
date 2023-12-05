@@ -92,7 +92,6 @@ namespace Ryujinx.Ui
         [GUI] MenuItem _fileMenu;
         [GUI] MenuItem _loadApplicationFile;
         [GUI] MenuItem _loadApplicationFolder;
-        [GUI] MenuItem _appletMenu;
         [GUI] MenuItem _actionMenu;
         [GUI] MenuItem _pauseEmulation;
         [GUI] MenuItem _resumeEmulation;
@@ -1358,35 +1357,14 @@ namespace Ryujinx.Ui
 
         private void FileMenu_StateChanged(object o, StateChangedArgs args)
         {
-            _appletMenu.Sensitive = _emulationContext == null && _contentManager.GetCurrentFirmwareVersion() != null;// && _contentManager.GetCurrentFirmwareVersion().Major > 3;
             _loadApplicationFile.Sensitive = _emulationContext == null;
             _loadApplicationFolder.Sensitive = _emulationContext == null;
         }
 
-        private void Load_Mii_Edit_Applet(object sender, EventArgs args)
+        private void Start_Boot2(object sender, EventArgs args)
         {
-            string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
-
-            RunApplication(contentPath);
-        }
-
-        private void Load_Web_Applet(object sender, EventArgs args)
-        {
-            string contentPath = _contentManager.GetInstalledContentPath(0x010000000000100a, StorageId.BuiltInSystem, NcaContentType.Program);
-
-            RunApplication(contentPath);
-        }
-
-        private void Start_QLaunch(object sender, EventArgs args)
-        {
-            string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001000, StorageId.BuiltInSystem, NcaContentType.Program);
-            Logger.Info?.Print(LogClass.Application, $"Attempting to launch QLaunch: {contentPath}");
-
-            RunApplication(contentPath);
-        }
-        private void Start_Starter(object sender, EventArgs args)
-        {
-            string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001012, StorageId.BuiltInSystem, NcaContentType.Program);
+            string contentPath = _contentManager.GetInstalledContentPath(0x0100000000000008, StorageId.BuiltInSystem, NcaContentType.Program);
+            Logger.Info?.Print(LogClass.Application, $"Attempting to launch Boot2: {contentPath}");
 
             RunApplication(contentPath);
         }

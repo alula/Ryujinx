@@ -46,57 +46,13 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="_appletMenu">
+                      <object class="GtkMenuItem" id="StartBoot2">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Load Applet</property>
+                        <property name="tooltip-text" translatable="yes">Start Boot2</property>
+                        <property name="label" translatable="yes">Start Boot2</property>
                         <property name="use-underline">True</property>
-                        <child type="submenu">
-                          <object class="GtkMenu">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <child>
-                              <object class="GtkMenuItem" id="LoadMiiEditApplet">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="tooltip-text" translatable="yes">Open Mii Editor Applet in Standalone mode</property>
-                                <property name="label" translatable="yes">Mii Editor</property>
-                                <property name="use-underline">True</property>
-                                <signal name="activate" handler="Load_Mii_Edit_Applet" swapped="no"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="StartQLaunch">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="tooltip-text" translatable="yes">Start QLaunch</property>
-                                <property name="label" translatable="yes">Start QLaunch</property>
-                                <property name="use-underline">True</property>
-                                <signal name="activate" handler="Start_QLaunch" swapped="no"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="StartStarter">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="tooltip-text" translatable="yes">Start Starter</property>
-                                <property name="label" translatable="yes">Start Starter</property>
-                                <property name="use-underline">True</property>
-                                <signal name="activate" handler="Start_Starter" swapped="no"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="LoadWebApplet">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="tooltip-text" translatable="yes">Start WebApplet</property>
-                                <property name="label" translatable="yes">Start WebApplet</property>
-                                <property name="use-underline">True</property>
-                                <signal name="activate" handler="Load_Web_Applet" swapped="no"/>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
+                        <signal name="activate" handler="Start_Boot2" swapped="no"/>
                       </object>
                     </child>
                     <child>
