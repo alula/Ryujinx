@@ -165,6 +165,26 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             return ResultCode.Success;
         }
 
+        [CommandCmif(1)]
+        public ResultCode PushOutData(ServiceCtx context)
+        {
+            IStorage data = GetObject<IStorage>(context, 0);
+
+            RealApplet.Instance.NormalSession.Push(data.Data);
+            RealApplet.Instance.InvokeAppletStateChanged();
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(10)]
+        public ResultCode ExitProcessAndReturn(ServiceCtx context)
+        {
+            context.Process.Terminate();
+            context.Device.System.ReturnFocus();
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(11)]
         // GetLibraryAppletInfo() -> nn::am::service::LibraryAppletInfo
         public ResultCode GetLibraryAppletInfo(ServiceCtx context)
