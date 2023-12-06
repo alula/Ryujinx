@@ -63,12 +63,12 @@ namespace Ryujinx.HLE.HOS.Applets
         private readonly Horizon _system;
         private readonly AppletId _appletId;
 
-        private AppletSession _normalSession;
-#pragma warning disable IDE0052 // Remove unread private member
-        private AppletSession _interactiveSession;
-#pragma warning restore IDE0052
+        public AppletSession NormalSession { get; private set; }
+        public AppletSession InteractiveSession { get; private set; }
 
         public event EventHandler AppletStateChanged;
+
+        public static RealApplet Instance { get; private set; }
 
         public RealApplet(AppletId appletId, Horizon system)
         {
@@ -78,8 +78,10 @@ namespace Ryujinx.HLE.HOS.Applets
 
         public ResultCode Start(AppletSession normalSession, AppletSession interactiveSession)
         {
-            _normalSession = normalSession;
-            _interactiveSession = interactiveSession;
+            NormalSession = normalSession;
+            InteractiveSession = interactiveSession;
+
+            Instance = this;
 
             // _normalSession.Push(BuildResponse());
 
@@ -107,6 +109,11 @@ namespace Ryujinx.HLE.HOS.Applets
         public ResultCode GetResult()
         {
             return ResultCode.Success;
+        }
+
+        public void InvokeAppletStateChanged()
+        {
+            AppletStateChanged?.Invoke(this, null);
         }
     }
 }
