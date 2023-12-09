@@ -38,12 +38,14 @@ using Silk.NET.Vulkan;
 using SPB.Graphics.Vulkan;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using ApplicationId = LibHac.ApplicationId;
 using GUI = Gtk.Builder.ObjectAttribute;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
 
@@ -56,6 +58,7 @@ namespace Ryujinx.UI
         private readonly AccountManager _accountManager;
         private readonly LibHacHorizonManager _libHacHorizonManager;
 
+        private List<ApplicationId> _titles = new();
         private UserChannelPersistence _userChannelPersistence;
 
         private HLE.Switch _emulationContext;
@@ -656,6 +659,7 @@ namespace Ryujinx.UI
                 _libHacHorizonManager,
                 _contentManager,
                 _accountManager,
+                _titles.ToImmutableList(),
                 _userChannelPersistence,
                 renderer,
                 deviceDriver,
@@ -737,6 +741,7 @@ namespace Ryujinx.UI
             _updatingGameTable = true;
 
             _tableStore.Clear();
+            _titles.Clear();
 
             Thread applicationLibraryThread = new(() =>
             {
@@ -1184,6 +1189,8 @@ namespace Ryujinx.UI
                     args.AppData.Path,
                     args.AppData.ControlHolder);
             });
+
+            _titles.Add(new ApplicationId(args.AppData.Id));
         }
 
         private void ApplicationCount_Updated(object sender, ApplicationCountUpdatedEventArgs args)
@@ -1425,7 +1432,14 @@ namespace Ryujinx.UI
         {
             string contentPath = _contentManager.GetInstalledContentPath(0x010000000000100a, StorageId.BuiltInSystem, NcaContentType.Program);
 
-            RunApplication(contentPath);
+            ApplicationData applicationData = new()
+            {
+                Name = "LibAppletWeb",
+                Id = 0x010000000000100aul,
+                Path = contentPath,
+            };
+
+            RunApplication(applicationData);
         }
 
         private void Start_QLaunch(object sender, EventArgs args)
@@ -1433,13 +1447,27 @@ namespace Ryujinx.UI
             string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001000, StorageId.BuiltInSystem, NcaContentType.Program);
             Logger.Info?.Print(LogClass.Application, $"Attempting to launch QLaunch: {contentPath}");
 
-            RunApplication(contentPath);
+            ApplicationData applicationData = new()
+            {
+                Name = "qlaunch",
+                Id = 0x0100000000001000ul,
+                Path = contentPath,
+            };
+
+            RunApplication(applicationData);
         }
         private void Start_Starter(object sender, EventArgs args)
         {
             string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001012, StorageId.BuiltInSystem, NcaContentType.Program);
 
-            RunApplication(contentPath);
+            ApplicationData applicationData = new()
+            {
+                Name = "starter",
+                Id = 0x0100000000001012ul,
+                Path = contentPath,
+            };
+
+            RunApplication(applicationData);
         }
 
         private void Open_Ryu_Folder(object sender, EventArgs args)
