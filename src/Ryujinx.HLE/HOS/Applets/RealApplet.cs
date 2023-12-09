@@ -3,6 +3,7 @@ using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
+using Ryujinx.HLE.Loaders.Processes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -61,19 +62,18 @@ namespace Ryujinx.HLE.HOS.Applets
         };
 
         private readonly Horizon _system;
-        private readonly AppletId _appletId;
-
+        public AppletId AppletId { get; private set; }
         public AppletSession NormalSession { get; private set; }
         public AppletSession InteractiveSession { get; private set; }
 
         public event EventHandler AppletStateChanged;
 
-        public static RealApplet Instance { get; private set; }
+        private ProcessResult _processResult;
 
         public RealApplet(AppletId appletId, Horizon system)
         {
             _system = system;
-            _appletId = appletId;
+            AppletId = appletId;
         }
 
         public ResultCode Start(AppletSession normalSession, AppletSession interactiveSession)
@@ -81,15 +81,13 @@ namespace Ryujinx.HLE.HOS.Applets
             NormalSession = normalSession;
             InteractiveSession = interactiveSession;
 
-            Instance = this;
-
             // _normalSession.Push(BuildResponse());
 
             // AppletStateChanged?.Invoke(this, null);
 
             // _system.ReturnFocus();
 
-            string contentPath = _system.ContentManager.GetInstalledContentPath(_appletTitles[_appletId], StorageId.BuiltInSystem, NcaContentType.Program);
+            string contentPath = _system.ContentManager.GetInstalledContentPath(_appletTitles[AppletId], StorageId.BuiltInSystem, NcaContentType.Program);
 
             if (contentPath.Length == 0)
             {
@@ -101,7 +99,12 @@ namespace Ryujinx.HLE.HOS.Applets
                 contentPath = VirtualFileSystem.SwitchPathToSystemPath(contentPath);
             }
 
-            _system.Device.LoadNca(contentPath);
+            if (!_system.Device.Processes.LoadNca(contentPath, out _processResult))
+            {
+                return ResultCode.NotAllocated;
+            }
+
+            _processResult.RealAppletInstance = this;
 
             return ResultCode.Success;
         }

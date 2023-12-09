@@ -1,6 +1,7 @@
 ﻿using LibHac.Util;
 using Ryujinx.Common.Logging;
 using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
 {
@@ -64,6 +65,33 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
         public bool TryPop(out byte[] item)
         {
             return _inputData.TryTake(out item);
+        }
+
+        public void InsertFront(byte[] item)
+        {
+            if (!this.TryInsertFront(item))
+            {
+                // TODO: Throw a proper exception
+                throw new InvalidOperationException();
+            }
+        }
+
+        public bool TryInsertFront(byte[] item)
+        {
+            List<byte[]> items = new List<byte[]>();
+            while (_inputData.TryTake(out byte[] i))
+            {
+                items.Add(i);
+            }
+
+            items.Insert(0, item);
+
+            foreach (byte[] i in items)
+            {
+                _inputData.TryAdd(i);
+            }
+
+            return true;
         }
 
         /// <summary>

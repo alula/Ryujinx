@@ -15,10 +15,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
     class ILibraryAppletSelfAccessor : IpcService
     {
         private readonly AppletStandalone _appletStandalone = new();
+        private RealApplet _realApplet;
 
         public ILibraryAppletSelfAccessor(ServiceCtx context)
         {
-            if (context.Device.Processes.ActiveApplication.ProgramId == 0x0100000000001009)
+            if (context.Device.Processes.ActiveApplication.RealAppletInstance != null)
+            {
+                _realApplet = context.Device.Processes.ActiveApplication.RealAppletInstance;
+            }
+            else if (context.Device.Processes.ActiveApplication.ProgramId == 0x0100000000001009)
             {
                 // Create MiiEdit data.
                 _appletStandalone = new AppletStandalone()
@@ -36,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             {
                 _appletStandalone = new AppletStandalone()
                 {
-                    AppletId          = AppletId.LibAppletWeb,
+                    AppletId = AppletId.LibAppletWeb,
                     LibraryAppletMode = LibraryAppletMode.AllForeground,
                 };
 
@@ -61,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
                 var argumentData = BrowserArgument.BuildArguments(ShimKind.Web, arguments);
 
-                _appletStandalone.InputData.AddLast(stream.ToArray());                
+                _appletStandalone.InputData.AddLast(stream.ToArray());
                 _appletStandalone.InputData.AddLast(argumentData);
             }
             else if (context.Device.Processes.ActiveApplication.ProgramId == 0x010000000000100d)
@@ -87,59 +92,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                 _appletStandalone.InputData.AddLast(stream.ToArray());
                 _appletStandalone.InputData.AddLast(new byte[1] { 2 });
             }
-            else if (context.Device.Processes.ActiveApplication.ProgramId == 0x0100000000001013)
-            {
-                _appletStandalone = new AppletStandalone()
-                {
-                    AppletId = AppletId.MyPage,
-                    LibraryAppletMode = LibraryAppletMode.AllForeground,
-                };
-
-                // version = 0x00080000;
-                CommonArguments commonArguments = new()
-                {
-                    Version = 1,
-                    StructureSize = (uint)Marshal.SizeOf(typeof(CommonArguments)),
-                    AppletVersion = 0x1,
-                    PlayStartupSound = true,
-                };
-                using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
-                using BinaryWriter writer = new(stream);
-                writer.WriteStruct(commonArguments);
-
-                using MemoryStream baseStream = new(new byte[0xB0 + 0xFF8]);
-                using BinaryWriter baseWriter = new(baseStream);
-
-                baseWriter.Write(7); //Type
-                baseWriter.Write(0); //Padding
-                baseWriter.Write(1L); //UID0
-                baseWriter.Write(0L); //UID1
-                baseWriter.Write(1L); //AccId
-
-                _appletStandalone.InputData.AddLast(stream.ToArray());
-                _appletStandalone.InputData.AddLast(baseStream.ToArray());
-            }
-            else if (context.Device.Processes.ActiveApplication.ProgramId == 0x0100000000001006)
-            {
-                _appletStandalone = new AppletStandalone()
-                {
-                    AppletId = AppletId.NetConnect,
-                    LibraryAppletMode = LibraryAppletMode.AllForeground,
-                };
-
-                CommonArguments commonArguments = new()
-                {
-                    Version = 1,
-                    StructureSize = (uint)Marshal.SizeOf(typeof(CommonArguments)),
-                    AppletVersion = 0x1,
-                };
-                using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
-                using BinaryWriter writer = new(stream);
-                writer.WriteStruct(commonArguments);
-
-                _appletStandalone.InputData.AddLast(stream.ToArray());
-                _appletStandalone.InputData.AddLast(new byte[0x100]);
-            }
             else
             {
                 throw new NotImplementedException($"{context.Device.Processes.ActiveApplication.ProgramId:X16} applet is not implemented.");
@@ -150,10 +102,20 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopInData() -> object<nn::am::service::IStorage>
         public ResultCode PopInData(ServiceCtx context)
         {
-            byte[] appletData = _appletStandalone.InputData.First.Value;
-            _appletStandalone.InputData.RemoveFirst();
+            byte[] appletData;
 
-            // Logger.Info?.Print(LogClass.ServiceAm, $"Applet data: {appletData.ToHexString()}");
+            if (_realApplet != null)
+            {
+                if (!_realApplet.NormalSession.TryPop(out appletData))
+                {
+                    return ResultCode.NotAvailable;
+                }
+            }
+            else
+            {
+                appletData = _appletStandalone.InputData.First.Value;
+                _appletStandalone.InputData.RemoveFirst();
+            }
 
             if (appletData.Length == 0)
             {
@@ -168,10 +130,12 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         [CommandCmif(1)]
         public ResultCode PushOutData(ServiceCtx context)
         {
-            IStorage data = GetObject<IStorage>(context, 0);
-
-            RealApplet.Instance.NormalSession.Push(data.Data);
-            RealApplet.Instance.InvokeAppletStateChanged();
+            if (_realApplet != null)
+            {
+                IStorage data = GetObject<IStorage>(context, 0);
+                _realApplet.NormalSession.Push(data.Data);
+                _realApplet.InvokeAppletStateChanged();
+            }
 
             return ResultCode.Success;
         }
@@ -189,11 +153,18 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // GetLibraryAppletInfo() -> nn::am::service::LibraryAppletInfo
         public ResultCode GetLibraryAppletInfo(ServiceCtx context)
         {
-            LibraryAppletInfo libraryAppletInfo = new()
+            LibraryAppletInfo libraryAppletInfo = new();
+
+            if (_realApplet != null)
             {
-                AppletId = _appletStandalone.AppletId,
-                LibraryAppletMode = _appletStandalone.LibraryAppletMode,
-            };
+                libraryAppletInfo.AppletId = _realApplet.AppletId;
+                libraryAppletInfo.LibraryAppletMode = LibraryAppletMode.AllForeground; // TODO
+            }
+            else
+            {
+                libraryAppletInfo.AppletId = _appletStandalone.AppletId;
+                libraryAppletInfo.LibraryAppletMode = _appletStandalone.LibraryAppletMode;
+            }
 
             context.ResponseData.WriteStruct(libraryAppletInfo);
 
@@ -220,7 +191,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         public ResultCode CanUseApplicationCore(ServiceCtx context)
         {
             context.ResponseData.Write(true);
-            
+
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
@@ -246,8 +217,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         public ResultCode UnpopInData(ServiceCtx context)
         {
             IStorage data = GetObject<IStorage>(context, 0);
-            
-            _appletStandalone.InputData.AddFirst(data.Data);
+
+            if (_realApplet != null)
+            {
+                _realApplet.NormalSession.InsertFront(data.Data);
+            }
+            else
+            {
+                _appletStandalone.InputData.AddFirst(data.Data);
+            }
 
             return ResultCode.Success;
         }
