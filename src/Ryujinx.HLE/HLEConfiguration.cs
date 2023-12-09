@@ -9,6 +9,8 @@ using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.UI;
 using System;
+using System.Collections.Immutable;
+using ApplicationId = LibHac.ApplicationId;
 
 namespace Ryujinx.HLE
 {
@@ -40,6 +42,12 @@ namespace Ryujinx.HLE
         /// </summary>
         /// <remarks>This cannot be changed after <see cref="Switch"/> instantiation.</remarks>
         internal readonly ContentManager ContentManager;
+
+        /// <summary>
+        /// The list of title ids found byApplicationLibrary.
+        /// </summary>
+        /// <remarks>This cannot be changed after <see cref="Switch"/> instantiation.</remarks>
+        internal readonly IImmutableList<ApplicationId> Titles;
 
         /// <summary>
         /// The persistent information between run for multi-application capabilities.
@@ -173,6 +181,7 @@ namespace Ryujinx.HLE
                                 LibHacHorizonManager libHacHorizonManager,
                                 ContentManager contentManager,
                                 AccountManager accountManager,
+                                IImmutableList<ApplicationId> titles,
                                 UserChannelPersistence userChannelPersistence,
                                 IRenderer gpuRenderer,
                                 IHardwareDeviceDriver audioDeviceDriver,
@@ -200,6 +209,7 @@ namespace Ryujinx.HLE
             LibHacHorizonManager = libHacHorizonManager;
             AccountManager = accountManager;
             ContentManager = contentManager;
+            Titles = titles;
             UserChannelPersistence = userChannelPersistence;
             GpuRenderer = gpuRenderer;
             AudioDeviceDriver = audioDeviceDriver;

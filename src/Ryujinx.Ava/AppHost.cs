@@ -46,6 +46,7 @@ using SixLabors.ImageSharp.Processing;
 using SPB.Graphics.Vulkan;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -53,6 +54,7 @@ using System.Threading.Tasks;
 using static Ryujinx.Ava.UI.Helpers.Win32NativeInterop;
 using AntiAliasing = Ryujinx.Common.Configuration.AntiAliasing;
 using Image = SixLabors.ImageSharp.Image;
+using ApplicationId = LibHac.ApplicationId;
 using InputManager = Ryujinx.Input.HLE.InputManager;
 using IRenderer = Ryujinx.Graphics.GAL.IRenderer;
 using Key = Ryujinx.Input.Key;
@@ -115,6 +117,7 @@ namespace Ryujinx.Ava
 
         public VirtualFileSystem VirtualFileSystem { get; }
         public ContentManager ContentManager { get; }
+        public IImmutableList<ApplicationId> Titles { get; }
         public NpadManager NpadManager { get; }
         public TouchScreenManager TouchScreenManager { get; }
         public Switch Device { get; set; }
@@ -770,6 +773,7 @@ namespace Ryujinx.Ava
                                                      _viewModel.LibHacHorizonManager,
                                                      ContentManager,
                                                      _accountManager,
+                                                     Titles.ToImmutableList(),
                                                      _userChannelPersistence,
                                                      renderer,
                                                      InitializeAudio(),

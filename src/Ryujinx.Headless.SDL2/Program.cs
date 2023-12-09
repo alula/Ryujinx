@@ -31,9 +31,11 @@ using Ryujinx.SDL2.Common;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
+using ApplicationId = LibHac.ApplicationId;
 using ConfigGamepadInputId = Ryujinx.Common.Configuration.Hid.Controller.GamepadInputId;
 using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 using Key = Ryujinx.Common.Configuration.Hid.Key;
@@ -48,6 +50,7 @@ namespace Ryujinx.Headless.SDL2
         private static ContentManager _contentManager;
         private static AccountManager _accountManager;
         private static LibHacHorizonManager _libHacHorizonManager;
+        private static List<ApplicationId> _titles = new();
         private static UserChannelPersistence _userChannelPersistence;
         private static InputManager _inputManager;
         private static Switch _emulationContext;
@@ -550,6 +553,7 @@ namespace Ryujinx.Headless.SDL2
                 _libHacHorizonManager,
                 _contentManager,
                 _accountManager,
+                _titles.ToImmutableList(),
                 _userChannelPersistence,
                 renderer,
                 new SDL2HardwareDeviceDriver(),

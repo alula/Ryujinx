@@ -37,11 +37,15 @@ using Ryujinx.UI.Windows;
 using Silk.NET.Vulkan;
 using SPB.Graphics.Vulkan;
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using ApplicationId = LibHac.ApplicationId;
 using GUI = Gtk.Builder.ObjectAttribute;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
 
@@ -54,6 +58,7 @@ namespace Ryujinx.UI
         private readonly AccountManager _accountManager;
         private readonly LibHacHorizonManager _libHacHorizonManager;
 
+        private List<ApplicationId> _titles = new();
         private UserChannelPersistence _userChannelPersistence;
 
         private HLE.Switch _emulationContext;
@@ -648,6 +653,7 @@ namespace Ryujinx.UI
                 _libHacHorizonManager,
                 _contentManager,
                 _accountManager,
+                _titles.ToImmutableList(),
                 _userChannelPersistence,
                 renderer,
                 deviceDriver,
@@ -1175,6 +1181,8 @@ namespace Ryujinx.UI
                     args.AppData.Path,
                     args.AppData.ControlHolder);
             });
+
+            _titles.Add(new ApplicationId(ulong.Parse(args.AppData.TitleId, NumberStyles.HexNumber)));
         }
 
         private void ApplicationCount_Updated(object sender, ApplicationCountUpdatedEventArgs args)
