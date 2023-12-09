@@ -3,6 +3,8 @@ using LibHac.Loader;
 using LibHac.Ns;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
+using Ryujinx.HLE.HOS.Applets;
+using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Processes.Extensions;
 using Ryujinx.Horizon.Common;
@@ -30,6 +32,8 @@ namespace Ryujinx.HLE.Loaders.Processes
         public readonly bool Is64Bit;
         public readonly bool DiskCacheEnabled;
         public readonly bool AllowCodeMemoryForJit;
+
+        internal RealApplet RealAppletInstance;
 
         public ProcessResult(
             MetaLoader metaLoader,

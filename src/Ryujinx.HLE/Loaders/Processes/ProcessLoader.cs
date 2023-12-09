@@ -100,10 +100,15 @@ namespace Ryujinx.HLE.Loaders.Processes
 
         public bool LoadNca(string path)
         {
+            return LoadNca(path, out _);
+        }
+
+        public bool LoadNca(string path, out ProcessResult processResult)
+        {
             FileStream file = new(path, FileMode.Open, FileAccess.Read);
             Nca nca = new(_device.Configuration.VirtualFileSystem.KeySet, file.AsStorage(false));
 
-            ProcessResult processResult = nca.Load(_device, null, null);
+            processResult = nca.Load(_device, null, null);
 
             if (processResult.ProcessId != 0 && _processesByPid.TryAdd(processResult.ProcessId, processResult))
             {
