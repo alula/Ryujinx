@@ -1,3 +1,5 @@
+using LibHac.Common;
+using LibHac.Ns;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Integration;
 using Ryujinx.Common.Configuration;
@@ -6,9 +8,11 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.HOS.Services.Ns.Types;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.UI;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using ApplicationId = LibHac.ApplicationId;
 
@@ -47,7 +51,7 @@ namespace Ryujinx.HLE
         /// The list of title ids found byApplicationLibrary.
         /// </summary>
         /// <remarks>This cannot be changed after <see cref="Switch"/> instantiation.</remarks>
-        internal readonly IImmutableList<ApplicationId> Titles;
+        internal readonly IImmutableList<RyuApplicationData> Titles;
 
         /// <summary>
         /// The persistent information between run for multi-application capabilities.
@@ -181,7 +185,7 @@ namespace Ryujinx.HLE
                                 LibHacHorizonManager libHacHorizonManager,
                                 ContentManager contentManager,
                                 AccountManager accountManager,
-                                IImmutableList<ApplicationId> titles,
+                                IImmutableList<RyuApplicationData> titles,
                                 UserChannelPersistence userChannelPersistence,
                                 IRenderer gpuRenderer,
                                 IHardwareDeviceDriver audioDeviceDriver,

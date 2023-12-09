@@ -21,6 +21,7 @@ using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.HOS.Services.Ns.Types;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
@@ -58,7 +59,7 @@ namespace Ryujinx.UI
         private readonly AccountManager _accountManager;
         private readonly LibHacHorizonManager _libHacHorizonManager;
 
-        private List<ApplicationId> _titles = new();
+        private List<RyuApplicationData> _titles = new();
         private UserChannelPersistence _userChannelPersistence;
 
         private HLE.Switch _emulationContext;
@@ -1182,7 +1183,8 @@ namespace Ryujinx.UI
                     args.AppData.ControlHolder);
             });
 
-            _titles.Add(new ApplicationId(ulong.Parse(args.AppData.TitleId, NumberStyles.HexNumber)));
+            var titleId = new ApplicationId(ulong.Parse(args.AppData.TitleId, NumberStyles.HexNumber)); // this is so gross.
+            _titles.Add(new(titleId, args.AppData.ControlHolder.Value, args.AppData.Icon));
         }
 
         private void ApplicationCount_Updated(object sender, ApplicationCountUpdatedEventArgs args)
