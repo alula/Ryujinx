@@ -60,6 +60,9 @@ using MouseButton = Ryujinx.Input.MouseButton;
 using ScalingFilter = Ryujinx.Common.Configuration.ScalingFilter;
 using Size = Avalonia.Size;
 using Switch = Ryujinx.HLE.Switch;
+using LibHac.Common;
+using LibHac.Ns;
+using Ryujinx.HLE.HOS.Services.Ns.Types;
 
 namespace Ryujinx.Ava
 {
@@ -127,7 +130,7 @@ namespace Ryujinx.Ava
 
         public VirtualFileSystem VirtualFileSystem { get; }
         public ContentManager ContentManager { get; }
-        public IImmutableList<ApplicationId> Titles { get; }
+        public IImmutableList<RyuApplicationData> Titles { get; }
         public NpadManager NpadManager { get; }
         public TouchScreenManager TouchScreenManager { get; }
         public Switch Device { get; set; }

@@ -1,4 +1,6 @@
 using CommandLine;
+using LibHac.Common;
+using LibHac.Ns;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.SDL2;
 using Ryujinx.Common;
@@ -26,6 +28,7 @@ using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.HOS.Services.Ns.Types;
 using Ryujinx.Input;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
@@ -52,7 +55,7 @@ namespace Ryujinx.Headless.SDL2
         private static ContentManager _contentManager;
         private static AccountManager _accountManager;
         private static LibHacHorizonManager _libHacHorizonManager;
-        private static List<ApplicationId> _titles = new();
+        private static List<RyuApplicationData> _titles = new();
         private static UserChannelPersistence _userChannelPersistence;
         private static InputManager _inputManager;
         private static Switch _emulationContext;

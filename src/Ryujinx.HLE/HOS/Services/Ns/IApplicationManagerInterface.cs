@@ -61,18 +61,18 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         [CommandCmif(0)]
         // ListApplicationRecord(s32) -> (s32, buffer<ApplicationRecord[], 6>)
         // entry_offset -> (out_entrycount, ApplicationRecord[])
-        public ResultCode ListApplicationRecord(ServiceCtx ctx)
+        public ResultCode ListApplicationRecord(ServiceCtx context)
         {
-            int entryOffset = ctx.RequestData.ReadInt32();
-            ulong position = ctx.Request.ReceiveBuff[0].Position;
+            int entryOffset = context.RequestData.ReadInt32();
+            ulong position = context.Request.ReceiveBuff[0].Position;
             List<ApplicationRecord> records = new();
 
-            foreach (ApplicationId appId in ctx.Device.Configuration.Titles)
+            foreach (RyuApplicationData title in context.Device.Configuration.Titles)
             {
                 records.Add(new ApplicationRecord()
                 {
                     Type = ApplicationRecordType.Installed,
-                    AppId = appId,
+                    AppId = title.AppId,
                     Unknown1 = 0x2,
                     Unknown2 = new byte[6],
                     Unknown3 = 0,
@@ -86,10 +86,10 @@ namespace Ryujinx.HLE.HOS.Services.Ns
                 records = records.Skip(entryOffset - 1).ToList();
             }
 
-            ctx.ResponseData.Write(records.Count);
+            context.ResponseData.Write(records.Count);
             foreach (var record in records)
             {
-                ctx.Memory.Write(position, StructToBytes(record));
+                context.Memory.Write(position, StructToBytes(record));
                 position += (ulong)Marshal.SizeOf<ApplicationRecord>();
             }
 
@@ -184,9 +184,53 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
             ulong position = context.Request.ReceiveBuff[0].Position;
 
-            ApplicationControlProperty nacp = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
+            var title = context.Device.Configuration.Titles.Where(x => x.AppId.Value == titleId).FirstOrDefault();
+
+            ApplicationControlProperty nacp = title.Nacp;
 
             context.Memory.Write(position, SpanHelpers.AsByteSpan(ref nacp).ToArray());
+            context.Memory.Write(position + 0x4000, title.Icon);
+
+            context.ResponseData.Write(0x4000 + title.Icon.Length);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1701)]
+        // GetApplicationView(buffer<unknown, 5>) -> buffer<unknown, 6>
+        public ResultCode GetApplicationView(ServiceCtx context)
+        {
+            ulong inPosition = context.Request.SendBuff[0].Position;
+            ulong inSize = context.Request.SendBuff[0].Size;
+            ulong outputPosition = context.Request.ReceiveBuff[0].Position;
+            ulong outputSize = context.Request.ReceiveBuff[0].Size;
+
+            List<ApplicationId> applicationIds = new();
+            for (ulong i = 0; i < inSize / sizeof(ulong); i++)
+            {
+                ulong position = inPosition + (i * sizeof(ulong));
+                applicationIds.Add(new(context.Memory.Read<ulong>(position)));
+            }
+
+            List<ApplicationView> views = new();
+
+            foreach (ApplicationId applicationId in applicationIds)
+            {
+                views.Add(new()
+                {
+                    AppId = applicationId,
+                    Unknown1 = 0,
+                    Flags = 0,
+                    Unknown2 = new byte[0x40]
+                });
+            }
+
+            context.ResponseData.Write(views.Count);
+            foreach (var view in views)
+            {
+                context.Memory.Write(outputPosition, StructToBytes(view));
+                outputPosition += (ulong)Marshal.SizeOf<ApplicationView>();
+            }
 
             return ResultCode.Success;
         }
