@@ -27,6 +27,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
             return ResultCode.Success;
         }
 
+        [CommandCmif(300)]
+        // OpenOverlayAppletProxy(u64, pid, handle<copy>) -> object<nn::am::service::IOverlayAppletProxy>
+        public ResultCode OpenOverlayAppletProxy(ServiceCtx context)
+        {
+            MakeObject(context, new IOverlayAppletProxy(context.Request.HandleDesc.PId));
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(350)]
         // OpenApplicationProxy(u64, pid, handle<copy>) -> object<nn::am::service::IApplicationProxy>
         public ResultCode OpenApplicationProxy(ServiceCtx context)
