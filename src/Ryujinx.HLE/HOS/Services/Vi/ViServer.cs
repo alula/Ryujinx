@@ -5,6 +5,7 @@ using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger.Types;
 using Ryujinx.HLE.HOS.Services.Vi.Types;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Services
@@ -229,6 +230,11 @@ namespace Ryujinx.HLE.HOS.Services
             selfAs.Write(_fbsBaseAddress + _bufferMap.SharedBuffers[fbIndex].Offset, texture.Data);
 
             return fbIndex;
+        }
+
+        public Span<byte> GetApplicationLastPresentedFrame(GpuContext gpuContext)
+        {
+            return gpuContext.Window.GetLastPresentedDataLinear().Data;
         }
     }
 }

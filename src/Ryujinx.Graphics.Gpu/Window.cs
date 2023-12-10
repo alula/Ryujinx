@@ -239,6 +239,19 @@ namespace Ryujinx.Graphics.Gpu
             return new TextureData(0, 0, Array.Empty<byte>());
         }
 
+        public TextureData GetLastPresentedDataLinear() {
+            PresentedTexture pt = Volatile.Read(ref _lastPresentedTexture);
+
+            if (pt != null)
+            {
+                byte[] inputData = CaptureLastFrame(pt.Texture.HostTexture, new ImageCrop());
+
+                return new TextureData(pt.Texture.Info.Width, pt.Texture.Info.Height, inputData);
+            }
+
+            return new TextureData(0, 0, Array.Empty<byte>());
+        }
+
         /// <summary>
         /// Presents a texture on the queue.
         /// If the queue is empty, then no texture is presented.
