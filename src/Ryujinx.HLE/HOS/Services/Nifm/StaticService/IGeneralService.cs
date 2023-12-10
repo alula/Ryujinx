@@ -109,7 +109,9 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // EnumerateNetworkInterfaces() -> (u32, buffer<nn::nifm::detail::sf::NetworkInterfaceInfo, 0xa>)
         public ResultCode EnumerateNetworkInterfaces(ServiceCtx context)
         {
-            context.ResponseData.Write(0);
+            context.ResponseData.Write(1); // account crashes if we don't have at least one interface
+
+            // TODO: write interface info
 
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 

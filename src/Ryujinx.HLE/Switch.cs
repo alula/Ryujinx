@@ -75,12 +75,12 @@ namespace Ryujinx.HLE
         public void BootSystem() {
             LoadSystemTitleId(SystemProgramId.Settings.Value);
             WaitServiceRegistered("set:sys");
-            // LoadSystemTitleId(SystemProgramId.Account.Value);
-            // WaitServiceRegistered("acc:u");
             // LoadSystemTitleId(SystemProgramId.Ssl.Value);
             // WaitServiceRegistered("ssl");
             LoadSystemTitleId(SystemProgramId.Glue.Value);
             WaitServiceRegistered("bgtc:t");
+            LoadSystemTitleId(SystemProgramId.Account.Value);
+            WaitServiceRegistered("acc:aa");
             LoadSystemTitleId(SystemProgramId.Npns.Value);
             // LoadSystemTitleId(0x0100000000001000); // qlaunch
         }

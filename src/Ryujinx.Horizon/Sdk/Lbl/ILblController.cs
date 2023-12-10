@@ -5,7 +5,18 @@ namespace Ryujinx.Horizon.Sdk.Lbl
 {
     interface ILblController : IServiceObject
     {
+        Result SaveCurrentSetting();
         Result LoadCurrentSetting();
+        Result SetCurrentBrightnessSetting(uint brightnessSetting);
+        Result GetCurrentBrightnessSetting(out uint brightnessSetting);
+        Result ApplyCurrentBrightnessSettingToBacklight();
+        Result GetBrightnessSettingAppliedToBacklight(out uint brightnessSetting);
+        Result EnableDimming();
+        Result DisableDimming();
+        Result IsDimmingEnabled(out bool dimmingEnabled);
+        Result EnableAutoBrightnessControl();
+        Result DisableAutoBrightnessControl();
+        Result IsAutoBrightnessControlEnabled(out bool autoBrightnessControlEnabled);
         Result SetBrightnessReflectionDelayLevel(float unknown0, float unknown1);
         Result GetBrightnessReflectionDelayLevel(out float unknown1, float unknown0);
         Result SetCurrentBrightnessMapping(float unknown0, float unknown1, float unknown2);
