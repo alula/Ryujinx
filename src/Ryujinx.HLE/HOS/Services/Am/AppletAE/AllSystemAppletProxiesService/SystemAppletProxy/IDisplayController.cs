@@ -17,11 +17,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             _transferMem = context.Device.System.AppletCaptureBufferTransfer;
         }
 
-        [CommandCmif(4)]
+        [CommandCmif(5)]
         // GetLastForegroundCaptureImageEx() -> (b8, buffer<bytes, 6>)
-        [CommandCmif(5)] // todo
-        // GetLastApplicationCaptureImageEx() -> (b8, buffer<bytes, 6>)
         [CommandCmif(6)] // todo
+        // GetLastApplicationCaptureImageEx() -> (b8, buffer<bytes, 6>)
+        [CommandCmif(7)] // todo
         // GetCallerAppletCaptureImageEx() -> (b8, buffer<bytes, 6>)
         public ResultCode GetLastForegroundCaptureImageEx(ServiceCtx context)
         {
@@ -50,15 +50,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             context.ResponseData.Write(true);
             context.Memory.Write(bufferPosition, frame);
             Logger.Debug?.Print(LogClass.ServiceAm, "Wrote last presented data to buffer.");
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(7)]
-        public ResultCode GetCallerAppletCaptureImageEx(ServiceCtx context)
-        {
-            context.ResponseData.Write(true);
-            context.ResponseData.Write(0);
 
             return ResultCode.Success;
         }
