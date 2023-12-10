@@ -9,12 +9,112 @@ namespace Ryujinx.Horizon.Lbl.Ipc
     {
         private bool _vrModeEnabled;
         private float _currentBrightnessSettingForVrMode;
+        private bool _dimmingEnabled = true;
+        private bool _autoBrightnessControlEnabled = true;
+        private uint _brightnessSetting = 50;
+
+        [CmifCommand(0)]
+        public Result SaveCurrentSetting()
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceLbl);
+            // NOTE: Stubbed in system module.
+
+            return Result.Success;
+        }
 
         [CmifCommand(1)]
         public Result LoadCurrentSetting()
         {
             Logger.Stub?.PrintStub(LogClass.ServiceLbl);
             // NOTE: Stubbed in system module.
+
+            return Result.Success;
+        }
+
+        [CmifCommand(2)]
+        // SetCurrentBrightnessSetting(u32)
+        public Result SetCurrentBrightnessSetting(uint brightnessSetting)
+        {
+            _brightnessSetting = brightnessSetting;
+
+            return Result.Success;
+        }
+
+        [CmifCommand(3)]
+        // GetCurrentBrightnessSetting() -> u32
+        public Result GetCurrentBrightnessSetting(out uint brightnessSetting)
+        {
+            brightnessSetting = _brightnessSetting;
+
+            return Result.Success;
+        }
+
+        [CmifCommand(4)]
+        // ApplyCurrentBrightnessSettingToBacklight()
+        public Result ApplyCurrentBrightnessSettingToBacklight()
+        {
+            return Result.Success;
+        }
+
+        [CmifCommand(5)]
+        // GetBrightnessSettingAppliedToBacklight() -> u32
+        public Result GetBrightnessSettingAppliedToBacklight(out uint brightnessSetting)
+        {
+            brightnessSetting = _brightnessSetting;
+
+            return Result.Success;
+        }
+
+        [CmifCommand(9)]
+        // EnableDimming()
+        public Result EnableDimming()
+        {
+            _dimmingEnabled = true;
+
+            return Result.Success;
+        }
+
+        [CmifCommand(10)]
+        // DisableDimming()
+        public Result DisableDimming()
+        {
+            _dimmingEnabled = false;
+
+            return Result.Success;
+        }
+
+        [CmifCommand(11)]
+        // IsDimmingEnabled(out bool dimmingEnabled)
+        public Result IsDimmingEnabled(out bool dimmingEnabled)
+        {
+            dimmingEnabled = _dimmingEnabled;
+
+            return Result.Success;
+        }
+
+        [CmifCommand(12)]
+        // EnableAutoBrightnessControl()
+        public Result EnableAutoBrightnessControl()
+        {
+            _autoBrightnessControlEnabled = true;
+
+            return Result.Success;
+        }
+
+        [CmifCommand(13)]
+        // DisableAutoBrightnessControl()
+        public Result DisableAutoBrightnessControl()
+        {
+            _autoBrightnessControlEnabled = false;
+
+            return Result.Success;
+        }
+
+        [CmifCommand(14)]
+        // IsAutoBrightnessControlEnabled(out bool autoBrightnessControlEnabled)
+        public Result IsAutoBrightnessControlEnabled(out bool autoBrightnessControlEnabled)
+        {
+            autoBrightnessControlEnabled = _autoBrightnessControlEnabled;
 
             return Result.Success;
         }

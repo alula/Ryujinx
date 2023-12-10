@@ -41,13 +41,13 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         private int _applicationRecordUpdateSystemEventHandle;
 
         private KEvent _sdCardMountStatusChangedEvent;
-        private int    _sdCardMountStatusChangedEventHandle;
+        private int _sdCardMountStatusChangedEventHandle;
 
         private KEvent _gameCardUpdateDetectionEvent;
-        private int    _gameCardUpdateDetectionEventHandle;
+        private int _gameCardUpdateDetectionEventHandle;
 
         private KEvent _gameCardMountFailureEvent;
-        private int    _gameCardMountFailureEventHandle;
+        private int _gameCardMountFailureEventHandle;
 
         public IApplicationManagerInterface(ServiceCtx context)
         {
@@ -143,6 +143,20 @@ namespace Ryujinx.HLE.HOS.Services.Ns
             }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_gameCardUpdateDetectionEventHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(55)]
+        // GetApplicationDesiredLanguage(u8) -> u8
+        public ResultCode GetApplicationDesiredLanguage(ServiceCtx context)
+        {
+            byte source = context.RequestData.ReadByte();
+            byte language = 0;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceNs, new { source, language });
+
+            context.ResponseData.Write(language);
 
             return ResultCode.Success;
         }
