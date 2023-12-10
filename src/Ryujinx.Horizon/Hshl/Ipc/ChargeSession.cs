@@ -33,7 +33,7 @@ namespace Ryujinx.Horizon.Hshl.Ipc
         [CmifCommand(1)]
         public Result Unk01(int unknown)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHshl);
+            Logger.Stub?.PrintStub(LogClass.ServiceHshl, new { unknown });
 
             return Result.Success;
         }

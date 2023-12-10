@@ -6,6 +6,8 @@ namespace Ryujinx.Horizon.Sdk.Hshl
 {
     interface IManager : IServiceObject
     {
+        Result Unk00(out int unk);
+        Result Unk01(out int unk);
         Result OpenChargeSession(out ChargeSession chargeSession);
     }
 }

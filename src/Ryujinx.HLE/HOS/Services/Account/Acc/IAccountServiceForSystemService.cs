@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Account.Acc.AccountService;
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc
@@ -8,9 +9,19 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
     {
         private readonly ApplicationServiceServer _applicationServiceServer;
 
+        private readonly KEvent _registrationEvent;
+        private readonly KEvent _stateChangeEvent;
+        private readonly KEvent _baasAvailabilityChangeEvent;
+        private readonly KEvent _profileUpdateEvent;
+
         public IAccountServiceForSystemService(ServiceCtx context, AccountServiceFlag serviceFlag)
         {
             _applicationServiceServer = new ApplicationServiceServer(serviceFlag);
+
+            _registrationEvent = new KEvent(context.Device.System.KernelContext);
+            _stateChangeEvent = new KEvent(context.Device.System.KernelContext);
+            _baasAvailabilityChangeEvent = new KEvent(context.Device.System.KernelContext);
+            _profileUpdateEvent = new KEvent(context.Device.System.KernelContext);
         }
 
         [CommandCmif(0)]
@@ -78,6 +89,26 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return _applicationServiceServer.TrySelectUserWithoutInteraction(context);
         }
 
+        [CommandCmif(100)]
+        // GetUserRegistrationNotifier() -> object<nn::account::detail::INotifier>
+        public ResultCode GetUserRegistrationNotifier(ServiceCtx context)
+        {
+
+            MakeObject(context, new INotifier(context, _registrationEvent));
+
+            return ResultCode.Success;
+        }
+
+
+        [CommandCmif(101)]
+        // GetUserStateChangeNotifier() -> object<nn::account::detail::INotifier>
+        public ResultCode GetUserStateChangeNotifier(ServiceCtx context)
+        {
+            MakeObject(context, new INotifier(context, _stateChangeEvent));
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(102)]
         // GetBaasAccountManagerForSystemService(nn::account::Uid) -> object<nn::account::baas::IManagerForApplication>
         public ResultCode GetBaasAccountManagerForSystemService(ServiceCtx context)
@@ -93,6 +124,24 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             // Doesn't occur in our case.
             // return ResultCode.NullObject;
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(103)]
+        // GetBaasUserAvailabilityChangeNotifier() -> object<nn::account::detail::INotifier>
+        public ResultCode GetBaasUserAvailabilityChangeNotifier(ServiceCtx context)
+        {
+            MakeObject(context, new INotifier(context, _baasAvailabilityChangeEvent));
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(104)]
+        // GetProfileUpdateNotifier() -> object<nn::account::detail::INotifier>
+        public ResultCode GetProfileUpdateNotifier(ServiceCtx context)
+        {
+            MakeObject(context, new INotifier(context, _profileUpdateEvent));
 
             return ResultCode.Success;
         }

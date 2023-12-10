@@ -151,6 +151,10 @@ namespace Ryujinx.HLE.HOS.Services
 
                 context.ResponseData.Write(IpcMagic.Sfco);
                 context.ResponseData.Write((long)result);
+
+                var toCopy = context.Response?.HandleDesc?.ToCopy != null ? string.Join(",", context.Response.HandleDesc.ToCopy) : "null";
+                var toMove = context.Response?.HandleDesc?.ToMove != null ? string.Join(",", context.Response.HandleDesc.ToMove) : "null";
+                Logger.Trace?.Print(LogClass.KernelIpc, $"handleDesc: ToCopy={toCopy} ToMove={toMove}");
             }
             else
             {

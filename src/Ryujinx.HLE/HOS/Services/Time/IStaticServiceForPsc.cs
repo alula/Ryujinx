@@ -1,6 +1,8 @@
 using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.Services.Time.StaticService;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
@@ -117,16 +119,32 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // SetStandardSteadyClockInternalOffset(nn::TimeSpanType internal_offset)
         public ResultCode SetStandardSteadyClockInternalOffset(ServiceCtx context)
         {
-            // This is only implemented in glue's StaticService.
-            return ResultCode.NotImplemented;
+            if ((_permissions & TimePermissions.SteadyClockWritableMask) == 0)
+            {
+                return ResultCode.PermissionDenied;
+            }
+
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
+            TimeSpanType internalOffset = context.RequestData.ReadStruct<TimeSpanType>();
+#pragma warning restore IDE0059
+
+            // TODO: set:sys SetExternalSteadyClockInternalOffset(internalOffset.ToSeconds())
+
+            return ResultCode.Success;
         }
 
         [CommandCmif(51)] // 9.0.0+
         // GetStandardSteadyClockRtcValue() -> u64
         public ResultCode GetStandardSteadyClockRtcValue(ServiceCtx context)
         {
-            // This is only implemented in glue's StaticService.
-            return ResultCode.NotImplemented;
+            ResultCode result = (ResultCode)IRtcManager.GetExternalRtcValue(out ulong rtcValue);
+
+            if (result == ResultCode.Success)
+            {
+                context.ResponseData.Write(rtcValue);
+            }
+
+            return result;
         }
 
         [CommandCmif(100)]
