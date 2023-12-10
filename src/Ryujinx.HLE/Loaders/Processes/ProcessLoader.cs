@@ -115,10 +115,10 @@ namespace Ryujinx.HLE.Loaders.Processes
                 if (processResult.Start(_device))
                 {
                     // NOTE: Check if process is SystemApplicationId or ApplicationId
-                    if (processResult.ProgramId > 0x01000000000007FF)
-                    {
-                        _latestPid = processResult.ProcessId;
-                    }
+                    // if (processResult.ProgramId > 0x01000000000007FF)
+                    // {
+                    _latestPid = processResult.ProcessId;
+                    // }
 
                     return true;
                 }

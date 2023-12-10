@@ -77,6 +77,7 @@ namespace Ryujinx.HLE
             LoadSystemTitleId(SystemProgramId.Settings.Value);
             WaitServiceRegistered("set:sys");
             LoadSystemTitleId(SystemProgramId.Glue.Value);
+            WaitServiceRegistered("bgtc:t");
             LoadSystemTitleId(SystemProgramId.Npns.Value);
             // LoadSystemTitleId(0x0100000000001000); // qlaunch
         }

@@ -10,8 +10,8 @@ namespace Ryujinx.Horizon.Hshl
         private const int TotalMaxSessionsCount = HshlMaxSessionsCount * 2;
 
         private const int PointerBufferSize = 0;
-        private const int MaxDomains = 0;
-        private const int MaxDomainObjects = 0;
+        private const int MaxDomains = 10;
+        private const int MaxDomainObjects = 10;
         private const int MaxPortsCount = 2;
 
         private static readonly ManagerOptions _options = new(PointerBufferSize, MaxDomains, MaxDomainObjects, false);
