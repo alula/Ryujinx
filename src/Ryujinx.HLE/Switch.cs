@@ -76,6 +76,8 @@ namespace Ryujinx.HLE
         public void BootSystem() {
             LoadSystemTitleId(SystemProgramId.Settings.Value);
             WaitServiceRegistered("set:sys");
+            // LoadSystemTitleId(SystemProgramId.Account.Value);
+            // WaitServiceRegistered("acc:u");
             LoadSystemTitleId(SystemProgramId.Glue.Value);
             WaitServiceRegistered("bgtc:t");
             LoadSystemTitleId(SystemProgramId.Npns.Value);
