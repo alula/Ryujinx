@@ -3,6 +3,7 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Ipc;
 using Ryujinx.HLE.HOS.Services.Apm;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
 using System;
 using System.Collections.Generic;
@@ -64,6 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             }
 
             string name = ReadName(context);
+            Logger.Debug?.Print(LogClass.ServiceSm, $"GetService: {name}");
 
             if (name == string.Empty)
             {
@@ -186,6 +188,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
             if (!_registry.TryRegister(name, port))
             {
+                Logger.Warning?.Print(LogClass.ServiceSm, $"Service \"{name}\" already registered.");
                 return ResultCode.AlreadyRegistered;
             }
 

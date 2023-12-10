@@ -81,12 +81,6 @@ namespace Ryujinx.HLE.HOS.Applets
             NormalSession = normalSession;
             InteractiveSession = interactiveSession;
 
-            // _normalSession.Push(BuildResponse());
-
-            // AppletStateChanged?.Invoke(this, null);
-
-            // _system.ReturnFocus();
-
             string contentPath = _system.ContentManager.GetInstalledContentPath(_appletTitles[AppletId], StorageId.BuiltInSystem, NcaContentType.Program);
 
             if (contentPath.Length == 0)

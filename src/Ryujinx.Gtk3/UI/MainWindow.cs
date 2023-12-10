@@ -694,7 +694,7 @@ namespace Ryujinx.UI
 
         private void SetupProgressUIHandlers()
         {
-            if (_emulationContext.Processes.ActiveApplication.DiskCacheLoadState != null)
+            if (_emulationContext.Processes.ActiveApplication?.DiskCacheLoadState != null)
             {
                 _emulationContext.Processes.ActiveApplication.DiskCacheLoadState.StateChanged -= ProgressHandler;
                 _emulationContext.Processes.ActiveApplication.DiskCacheLoadState.StateChanged += ProgressHandler;
@@ -930,6 +930,9 @@ namespace Ryujinx.UI
 
                     isFirmwareTitle = true;
                 }
+
+                Translator.IsReadyForTranslation.Set();
+                _emulationContext.BootSystem();
 
                 if (!LoadApplication(application.Path, application.Id, isFirmwareTitle))
                 {
@@ -1447,7 +1450,6 @@ namespace Ryujinx.UI
         private void Start_QLaunch(object sender, EventArgs args)
         {
             string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001000, StorageId.BuiltInSystem, NcaContentType.Program);
-            Logger.Info?.Print(LogClass.Application, $"Attempting to launch QLaunch: {contentPath}");
 
             ApplicationData applicationData = new()
             {
@@ -1458,6 +1460,7 @@ namespace Ryujinx.UI
 
             RunApplication(applicationData);
         }
+
         private void Start_Starter(object sender, EventArgs args)
         {
             string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001012, StorageId.BuiltInSystem, NcaContentType.Program);

@@ -30,7 +30,9 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         public IFileSystemProxy(ServiceCtx context) : base(context.Device.System.FsServer)
         {
-            var applicationClient = context.Device.System.LibHacHorizonManager.ApplicationClient;
+            // TODO: HACK to make things easier, we should Use proper client instances for specified PIDs, right now we're using the privileged client for everything.
+            // var applicationClient = context.Device.System.LibHacHorizonManager.ApplicationClient;
+            var applicationClient = context.Device.System.LibHacHorizonManager.RyujinxClient;
             _baseFileSystemProxy = applicationClient.Fs.Impl.GetFileSystemProxyServiceObject();
         }
 

@@ -1,11 +1,16 @@
+using LibHac.Ncm;
+using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Audio.Backends.CompatLayer;
 using Ryujinx.Audio.Integration;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
+using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Apm;
 using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.HLE.HOS.Services.Sm;
 using Ryujinx.HLE.Loaders.Processes;
 using Ryujinx.HLE.UI;
 using Ryujinx.Memory;
@@ -68,6 +73,14 @@ namespace Ryujinx.HLE
 #pragma warning restore IDE0055
         }
 
+        public void BootSystem() {
+            LoadSystemTitleId(SystemProgramId.Settings.Value);
+            WaitServiceRegistered("set:sys");
+            LoadSystemTitleId(SystemProgramId.Glue.Value);
+            LoadSystemTitleId(SystemProgramId.Npns.Value);
+            // LoadSystemTitleId(0x0100000000001000); // qlaunch
+        }
+
         public bool LoadCart(string exeFsDir, string romFsFile = null)
         {
             return Processes.LoadUnpackedNca(exeFsDir, romFsFile);
@@ -91,6 +104,28 @@ namespace Ryujinx.HLE
         public bool LoadProgram(string fileName)
         {
             return Processes.LoadNxo(fileName);
+        }
+
+        public bool LoadSystemTitleId(ulong titleId)
+        {
+            string jitPath = System.ContentManager.GetInstalledContentPath(titleId, StorageId.BuiltInSystem, NcaContentType.Program);
+            string filePath = VirtualFileSystem.SwitchPathToSystemPath(jitPath);
+
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new InvalidSystemResourceException("Specified title ID is not installed on the system.");
+            }
+
+            return Processes.LoadNca(filePath);
+        }
+
+        public void WaitServiceRegistered(string serviceName)
+        {
+            Logger.Debug?.Print(LogClass.Service, $"Waiting for {serviceName} to be registered...");
+            while (!System.SmRegistry.IsServiceRegistered(serviceName))
+            {
+                System.SmRegistry.WaitForServiceRegistration();
+            }
         }
 
         public bool WaitFifo()
