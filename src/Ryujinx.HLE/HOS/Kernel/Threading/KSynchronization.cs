@@ -26,6 +26,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             // Check if objects are already signaled before waiting.
             for (int index = 0; index < syncObjs.Length; index++)
             {
+                if (syncObjs[index] == null)
+                    continue;
+
                 if (!syncObjs[index].IsSignaled())
                 {
                     continue;
@@ -65,6 +68,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 for (int index = 0; index < syncObjs.Length; index++)
                 {
+                    if (syncObjs[index] == null)
+                        continue;
+
                     syncNodes[index] = syncObjs[index].AddWaitingThread(currentThread);
                 }
 
@@ -96,6 +102,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 for (int index = 0; index < syncObjs.Length; index++)
                 {
+
+                    if (syncObjs[index] == null)
+                        continue;
+
                     syncObjs[index].RemoveWaitingThread(syncNodes[index]);
 
                     if (syncObjs[index] == currentThread.SignaledObj)
