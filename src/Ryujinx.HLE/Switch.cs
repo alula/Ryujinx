@@ -77,6 +77,8 @@ namespace Ryujinx.HLE
             WaitServiceRegistered("set:sys");
             // LoadSystemTitleId(SystemProgramId.Account.Value);
             // WaitServiceRegistered("acc:u");
+            // LoadSystemTitleId(SystemProgramId.Ssl.Value);
+            // WaitServiceRegistered("ssl");
             LoadSystemTitleId(SystemProgramId.Glue.Value);
             WaitServiceRegistered("bgtc:t");
             LoadSystemTitleId(SystemProgramId.Npns.Value);

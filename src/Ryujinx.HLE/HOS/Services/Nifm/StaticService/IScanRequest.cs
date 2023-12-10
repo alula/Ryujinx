@@ -1,8 +1,8 @@
-﻿using Ryujinx.HLE.HOS.Ipc;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
 using System;
-using static Microsoft.IO.RecyclableMemoryStreamManager;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 {
@@ -14,6 +14,36 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         public IScanRequest(Horizon system)
         {
             _systemEvent = new KEvent(system.KernelContext);
+        }
+
+        [CommandCmif(0)]
+        // Submit()
+        public ResultCode Submit(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
+            _systemEvent.ReadableEvent.Signal();
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(1)]
+        // IsProcessing() -> bool
+        public ResultCode IsProcessing(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
+            context.ResponseData.Write(false);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(2)]
+        // GetResult() -> u32
+        public ResultCode GetResult(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
+            context.ResponseData.Write(0);
+
+            return ResultCode.Success;
         }
 
         [CommandCmif(3)]
