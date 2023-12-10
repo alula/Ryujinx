@@ -2923,6 +2923,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 for (; processedHandles < handles.Length; processedHandles++)
                 {
+                    if (handles[processedHandles] == 0)
+                        continue;
+
                     KSynchronizationObject syncObj = currentProcess.HandleTable.GetObject<KSynchronizationObject>(handles[processedHandles]);
 
                     if (syncObj == null)
@@ -2940,7 +2943,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                     // One or more handles are invalid.
                     for (int index = 0; index < processedHandles; index++)
                     {
-                        currentThread.WaitSyncObjects[index].DecrementReferenceCount();
+                        currentThread.WaitSyncObjects[index]?.DecrementReferenceCount();
                     }
 
                     return KernelResult.InvalidHandle;
@@ -2961,7 +2964,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             for (int index = 0; index < handles.Length; index++)
             {
-                currentThread.WaitSyncObjects[index].DecrementReferenceCount();
+                currentThread.WaitSyncObjects[index]?.DecrementReferenceCount();
             }
 
             return result;
