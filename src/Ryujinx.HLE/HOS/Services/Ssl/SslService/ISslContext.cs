@@ -83,5 +83,18 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             return ResultCode.Success;
         }
+
+        [CommandCmif(8)]
+        // RegisterInternalPki(u32) -> u64
+        public ResultCode RegisterInternalPki(ServiceCtx context)
+        {
+            uint certificateFormat = context.RequestData.ReadUInt32();
+
+            context.ResponseData.Write(_clientCertificateId++);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { certificateFormat });
+
+            return ResultCode.Success;
+        }
     }
 }

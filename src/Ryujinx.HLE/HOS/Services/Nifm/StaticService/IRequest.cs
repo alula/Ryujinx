@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Threading;
@@ -110,6 +111,17 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         public ResultCode SetRequirementPreset(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(9)]
+        // SetNetworkProfileId(nn::util::Uuid)
+        public ResultCode SetNetworkProfileId(ServiceCtx context)
+        {
+            UInt128 uuid = context.RequestData.ReadStruct<UInt128>();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm, new { uuid });
 
             return ResultCode.Success;
         }
