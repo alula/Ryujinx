@@ -2,6 +2,7 @@ using Ryujinx.Common;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.Utilities;
 using Ryujinx.Horizon.Common;
@@ -15,11 +16,17 @@ namespace Ryujinx.HLE.HOS.Services.Time
     {
         private readonly TimeManager _timeManager;
         private int _automaticCorrectionEvent;
+        private readonly KEvent _alarmRegistrationEvent;
+        private int _alarmRegistrationEventHandle;
+        private readonly KEvent _clockOperationEvent;
+        private int _clockOperationEventHandle;
 
         public ITimeServiceManager(ServiceCtx context)
         {
             _timeManager = TimeManager.Instance;
             _automaticCorrectionEvent = 0;
+            _alarmRegistrationEvent = new KEvent(context.Device.System.KernelContext);
+            _clockOperationEvent = new KEvent(context.Device.System.KernelContext);
         }
 
         [CommandCmif(0)]
@@ -150,27 +157,39 @@ namespace Ryujinx.HLE.HOS.Services.Time
         }
 
         [CommandCmif(50)]
-        // Unknown50() -> handle<copy>
-        public ResultCode Unknown50(ServiceCtx context)
+        // GetStandardLocalClockOperationEvent() -> handle<copy>
+        public ResultCode GetStandardLocalClockOperationEvent(ServiceCtx context)
         {
-            // TODO: figure out the usage of this event
-            throw new ServiceNotImplementedException(this, context);
+            return GetClockOperationEvent(context);
         }
 
         [CommandCmif(51)]
-        // Unknown51() -> handle<copy>
-        public ResultCode Unknown51(ServiceCtx context)
+        // GetStandardNetworkClockOperationEventForServiceManager() -> handle<copy>
+        public ResultCode GetStandardNetworkClockOperationEventForServiceManager(ServiceCtx context)
         {
-            // TODO: figure out the usage of this event
-            throw new ServiceNotImplementedException(this, context);
+            return GetClockOperationEvent(context);
         }
 
         [CommandCmif(52)]
-        // Unknown52() -> handle<copy>
-        public ResultCode Unknown52(ServiceCtx context)
+        // GetEphemeralNetworkClockOperationEventForServiceManager() -> handle<copy>
+        public ResultCode GetEphemeralNetworkClockOperationEventForServiceManager(ServiceCtx context)
         {
-            // TODO: figure out the usage of this event
-            throw new ServiceNotImplementedException(this, context);
+            return GetClockOperationEvent(context);
+        }
+
+        private ResultCode GetClockOperationEvent(ServiceCtx context)
+        {
+            if (_clockOperationEventHandle == 0)
+            {
+                if (context.Process.HandleTable.GenerateHandle(_clockOperationEvent.ReadableEvent, out _clockOperationEventHandle) != Result.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_clockOperationEventHandle);
+
+            return ResultCode.Success;
         }
 
         [CommandCmif(60)]
@@ -207,8 +226,18 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetAlarmRegistrationEvent() -> handle<copy>
         public ResultCode GetAlarmRegistrationEvent(ServiceCtx context)
         {
-            // TODO
-            throw new ServiceNotImplementedException(this, context);
+
+            if (_alarmRegistrationEventHandle == 0)
+            {
+                if (context.Process.HandleTable.GenerateHandle(_alarmRegistrationEvent.ReadableEvent, out _alarmRegistrationEventHandle) != Result.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_alarmRegistrationEventHandle);
+
+            return ResultCode.Success;
         }
 
         [CommandCmif(201)]

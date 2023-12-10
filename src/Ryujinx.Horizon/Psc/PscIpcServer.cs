@@ -12,8 +12,8 @@ namespace Ryujinx.Horizon.Psc
         private const int TotalMaxSessionsCount = PscCMaxSessionsCount + PscMMaxSessionsCount + PscLMaxSessionsCount;
 
         private const int PointerBufferSize = 0;
-        private const int MaxDomains = 0;
-        private const int MaxDomainObjects = 0;
+        private const int MaxDomains = 10;
+        private const int MaxDomainObjects = 10;
         private const int MaxPortsCount = 3;
 
         private static readonly ManagerOptions _options = new(PointerBufferSize, MaxDomains, MaxDomainObjects, false);
