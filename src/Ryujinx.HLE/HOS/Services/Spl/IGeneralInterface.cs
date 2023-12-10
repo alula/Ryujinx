@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.Spl.Types;
@@ -30,6 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Spl
             // TODO: This should call svcCallSecureMonitor using arg 0xC3000002.
             //       Since it's currently not implemented we can use a private method for now.
             SmcResult result = SmcGetConfig(context, out ulong configValue, configItem);
+            Logger.Debug?.PrintStub(LogClass.ServiceSm, new { configItem, configValue, result });
 
             // Nintendo has some special handling here for hardware type/is_retail.
             if (result == SmcResult.InvalidArgument)
@@ -51,7 +53,22 @@ namespace Ryujinx.HLE.HOS.Services.Spl
 
             context.ResponseData.Write(configValue);
 
+            if (result == SmcResult.Success) {
+                return ResultCode.Success;
+            }
+
             return (ResultCode)((int)result << 9) | ResultCode.ModuleId;
+        }
+
+        [CommandCmif(11)]
+        // IsDevelopment() -> bool
+        public ResultCode IsDevelopment(ServiceCtx context)
+        {
+            SmcResult result = SmcGetConfig(context, out ulong configValue, ConfigItem.HardwareState);
+
+            context.ResponseData.Write(configValue == (ulong)HardwareState.Development);
+
+            return ResultCode.Success;
         }
 
         private SmcResult SmcGetConfig(ServiceCtx context, out ulong configValue, ConfigItem configItem)
@@ -85,7 +102,9 @@ namespace Ryujinx.HLE.HOS.Services.Spl
                 case ConfigItem.SecurityEngineInterruptNumber:
                     return SmcResult.NotImplemented;
                 case ConfigItem.FuseVersion:
-                    return SmcResult.NotImplemented;
+                    configValue = version.GetExpectedFuseCount(true);
+                    break;
+                    // return SmcResult.NotImplemented;
                 case ConfigItem.HardwareType:
                     configValue = (ulong)HardwareType.Icosa;
                     break;
@@ -96,7 +115,8 @@ namespace Ryujinx.HLE.HOS.Services.Spl
                     configValue = 0;
                     break;
                 case ConfigItem.DeviceId:
-                    return SmcResult.NotImplemented;
+                    configValue = 0x0011223344556677;
+                    break;
                 case ConfigItem.BootReason:
                     // This was removed in firmware 4.0.0.
                     return SmcResult.InvalidArgument;
@@ -111,11 +131,13 @@ namespace Ryujinx.HLE.HOS.Services.Spl
                 case ConfigItem.IsChargerHiZModeEnabled:
                     return SmcResult.NotImplemented;
                 case ConfigItem.QuestState:
-                    return SmcResult.NotImplemented;
+                    configValue = (ulong)RetailInteractiveDisplayState.Disabled;
+                    break;
                 case ConfigItem.RegulatorType:
                     return SmcResult.NotImplemented;
                 case ConfigItem.DeviceUniqueKeyGeneration:
-                    return SmcResult.NotImplemented;
+                    configValue = 0;
+                    break;
                 case ConfigItem.Package2Hash:
                     return SmcResult.NotImplemented;
                 default:

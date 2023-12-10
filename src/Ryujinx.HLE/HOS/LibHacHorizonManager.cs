@@ -4,6 +4,7 @@ using LibHac.Common;
 using LibHac.FsSrv.Impl;
 using LibHac.Loader;
 using LibHac.Ncm;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Arp;
 using System;

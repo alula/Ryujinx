@@ -16,5 +16,12 @@ namespace Ryujinx.Horizon.Bcat.Ipc
 
             return Result.Success;
         }
+
+        [CmifCommand(30300)]
+        // RegisterSystemApplicationDeliveryTasks()
+        public Result RegisterSystemApplicationDeliveryTasks()
+        {
+            return Result.Success;
+        }
     }
 }

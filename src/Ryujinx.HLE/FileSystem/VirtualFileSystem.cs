@@ -202,6 +202,7 @@ namespace Ryujinx.HLE.FileSystem
 
             // Use our own encrypted fs creator that doesn't actually do any encryption
             fsServerObjects.FsCreators.EncryptedFileSystemCreator = new EncryptedFileSystemCreator();
+            fsServerObjects.FsCreators.BuiltInStorageCreator = new BuiltInStorageCreator();
 
             GameCard = fsServerObjects.GameCard;
             SdCard = fsServerObjects.Sdmmc;
@@ -226,6 +227,7 @@ namespace Ryujinx.HLE.FileSystem
             string keyFile = null;
             string titleKeyFile = null;
             string consoleKeyFile = null;
+            string cal0File = null;
 
             if (AppDataManager.Mode == AppDataManager.LaunchMode.UserProfile)
             {
@@ -239,6 +241,7 @@ namespace Ryujinx.HLE.FileSystem
                 string localKeyFile = Path.Combine(basePath, "prod.keys");
                 string localTitleKeyFile = Path.Combine(basePath, "title.keys");
                 string localConsoleKeyFile = Path.Combine(basePath, "console.keys");
+                string localCal0File = Path.Combine(basePath, "PRODINFO.bin");
 
                 if (File.Exists(localKeyFile))
                 {
@@ -254,9 +257,19 @@ namespace Ryujinx.HLE.FileSystem
                 {
                     consoleKeyFile = localConsoleKeyFile;
                 }
+
+                if (File.Exists(localCal0File))
+                {
+                    cal0File = localCal0File;
+                }
             }
 
             ExternalKeyReader.ReadKeyFile(KeySet, keyFile, titleKeyFile, consoleKeyFile, null);
+
+            if (cal0File != null)
+            {
+                BuiltInStorageCreator.Cal0Blob = File.ReadAllBytes(cal0File);
+            }
         }
 
         public void ImportTickets(IFileSystem fs)
