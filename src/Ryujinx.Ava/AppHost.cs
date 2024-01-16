@@ -801,6 +801,9 @@ namespace Ryujinx.Ava
                                                      ConfigurationState.Instance.Multiplayer.Mode);
 
             Device = new Switch(configuration);
+
+            Translator.IsReadyForTranslation.Set();
+            Device.BootSystem();
         }
 
         private static IHardwareDeviceDriver InitializeAudio()

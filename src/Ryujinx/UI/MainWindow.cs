@@ -1370,7 +1370,7 @@ namespace Ryujinx.UI
 
         private void FileMenu_StateChanged(object o, StateChangedArgs args)
         {
-            _appletMenu.Sensitive = _emulationContext == null && _contentManager.GetCurrentFirmwareVersion() != null;// && _contentManager.GetCurrentFirmwareVersion().Major > 3;
+            _appletMenu.Sensitive = _emulationContext == null && _contentManager.GetCurrentFirmwareVersion() != null;
             _loadApplicationFile.Sensitive = _emulationContext == null;
             _loadApplicationFolder.Sensitive = _emulationContext == null;
         }
@@ -1392,13 +1392,6 @@ namespace Ryujinx.UI
         private void Start_QLaunch(object sender, EventArgs args)
         {
             string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001000, StorageId.BuiltInSystem, NcaContentType.Program);
-
-            RunApplication(contentPath);
-        }
-
-        private void Start_Starter(object sender, EventArgs args)
-        {
-            string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001012, StorageId.BuiltInSystem, NcaContentType.Program);
 
             RunApplication(contentPath);
         }

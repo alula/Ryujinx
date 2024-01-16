@@ -137,6 +137,16 @@ namespace Ryujinx.Ava.UI.Views.Main
             }
         }
 
+        public async void StartQLaunch(object sender, RoutedEventArgs e)
+        {
+            string contentPath = ViewModel.ContentManager.GetInstalledContentPath(0x0100000000001000, StorageId.BuiltInSystem, NcaContentType.Program);
+
+            if (!string.IsNullOrEmpty(contentPath))
+            {
+                await ViewModel.LoadApplication(contentPath, false, "qlaunch");
+            }
+        }
+
         public async void OpenAmiiboWindow(object sender, RoutedEventArgs e)
         {
             if (!ViewModel.IsAmiiboRequested)
