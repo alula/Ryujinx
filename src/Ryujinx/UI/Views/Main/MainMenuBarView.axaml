@@ -39,6 +39,9 @@
                         Click="OpenMiiApplet"
                         Header="Mii Edit Applet"
                         ToolTip.Tip="{locale:Locale MenuBarFileOpenAppletOpenMiiAppletToolTip}" />
+                    <MenuItem
+                        Click="StartQLaunch"
+                        Header="Start QLaunch" />
                 </MenuItem>
                 <Separator />
                 <MenuItem
