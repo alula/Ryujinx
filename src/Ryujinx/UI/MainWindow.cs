@@ -665,6 +665,7 @@ namespace Ryujinx.UI
                 ConfigurationState.Instance.Graphics.EnableVsync,
                 ConfigurationState.Instance.System.EnableDockedMode,
                 ConfigurationState.Instance.System.EnablePtc,
+                ConfigurationState.Instance.System.EnableServiceLLE,
                 ConfigurationState.Instance.System.EnableInternetAccess,
                 fsIntegrityCheckLevel,
                 ConfigurationState.Instance.System.FsGlobalAccessLogMode,

@@ -57,6 +57,7 @@ namespace Ryujinx.UI.Windows
         [GUI] RadioButton _hideCursorOnIdle;
         [GUI] RadioButton _hideCursorAlways;
         [GUI] CheckButton _vSyncToggle;
+        [GUI] CheckButton _serviceLLEToggle;
         [GUI] CheckButton _shaderCacheToggle;
         [GUI] CheckButton _textureRecompressionToggle;
         [GUI] CheckButton _macroHLEToggle;
@@ -266,6 +267,11 @@ namespace Ryujinx.UI.Windows
             if (ConfigurationState.Instance.System.EnablePtc)
             {
                 _ptcToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.EnableServiceLLE)
+            {
+                _serviceLLEToggle.Click();
             }
 
             if (ConfigurationState.Instance.System.EnableInternetAccess)
@@ -633,6 +639,7 @@ namespace Ryujinx.UI.Windows
             ConfigurationState.Instance.Graphics.EnableTextureRecompression.Value = _textureRecompressionToggle.Active;
             ConfigurationState.Instance.Graphics.EnableMacroHLE.Value = _macroHLEToggle.Active;
             ConfigurationState.Instance.System.EnablePtc.Value = _ptcToggle.Active;
+            ConfigurationState.Instance.System.EnableServiceLLE.Value = _serviceLLEToggle.Active;
             ConfigurationState.Instance.System.EnableInternetAccess.Value = _internetToggle.Active;
             ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value = _fsicToggle.Active;
             ConfigurationState.Instance.System.MemoryManagerMode.Value = memoryMode;

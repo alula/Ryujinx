@@ -111,6 +111,11 @@ namespace Ryujinx.HLE
         internal readonly bool EnablePtc;
 
         /// <summary>
+        /// Control if service low-level emulation should be enabled.
+        /// </summary>
+        internal readonly bool EnableServiceLLE;
+
+        /// <summary>
         /// Control if the guest application should be told that there is a Internet connection available.
         /// </summary>
         public bool EnableInternetAccess { internal get; set; }
@@ -196,6 +201,7 @@ namespace Ryujinx.HLE
                                 bool enableVsync,
                                 bool enableDockedMode,
                                 bool enablePtc,
+                                bool enableServiceLLE,
                                 bool enableInternetAccess,
                                 IntegrityCheckLevel fsIntegrityCheckLevel,
                                 int fsGlobalAccessLogMode,
@@ -224,6 +230,7 @@ namespace Ryujinx.HLE
             EnableVsync = enableVsync;
             EnableDockedMode = enableDockedMode;
             EnablePtc = enablePtc;
+            EnableServiceLLE = enableServiceLLE;
             EnableInternetAccess = enableInternetAccess;
             FsIntegrityCheckLevel = fsIntegrityCheckLevel;
             FsGlobalAccessLogMode = fsGlobalAccessLogMode;

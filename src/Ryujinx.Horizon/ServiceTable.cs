@@ -33,8 +33,11 @@ namespace Ryujinx.Horizon
         {
             List<ServiceEntry> entries = new();
 
-            void RegisterService<T>() where T : IService
+            void RegisterService<T>(bool ignoreOnLLE = false) where T : IService
             {
+                if (options.EnableServiceLLE && ignoreOnLLE)
+                    return;
+
                 entries.Add(new ServiceEntry(T.Main, this, options));
             }
 
