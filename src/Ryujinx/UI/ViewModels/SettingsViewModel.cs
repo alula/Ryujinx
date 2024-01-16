@@ -141,6 +141,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool EnableInternetAccess { get; set; }
         public bool EnableFsIntegrityChecks { get; set; }
         public bool IgnoreMissingServices { get; set; }
+        public bool EnableServiceLLE { get; set; }
         public bool ExpandDramSize { get; set; }
         public bool EnableShaderCache { get; set; }
         public bool EnableTextureRecompression { get; set; }
@@ -428,6 +429,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             EnableFsIntegrityChecks = config.System.EnableFsIntegrityChecks;
             ExpandDramSize = config.System.ExpandRam;
             IgnoreMissingServices = config.System.IgnoreMissingServices;
+            EnableServiceLLE = config.System.EnableServiceLLE;
 
             // CPU
             EnablePptc = config.System.EnablePtc;
@@ -522,6 +524,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.System.EnableFsIntegrityChecks.Value = EnableFsIntegrityChecks;
             config.System.ExpandRam.Value = ExpandDramSize;
             config.System.IgnoreMissingServices.Value = IgnoreMissingServices;
+            config.System.EnableServiceLLE.Value = EnableServiceLLE;
 
             // CPU
             config.System.EnablePtc.Value = EnablePptc;

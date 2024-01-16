@@ -94,7 +94,8 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             }
             else
             {
-                if (_services.TryGetValue(name, out Type type))
+                bool isOnLLEBlacklist = context.Device.EnableServiceLLE && Switch.ServiceLLEBlacklist.Contains(name);
+                if (!isOnLLEBlacklist && _services.TryGetValue(name, out Type type))
                 {
                     ServiceAttribute serviceAttribute = (ServiceAttribute)type.GetCustomAttributes(typeof(ServiceAttribute)).First(service => ((ServiceAttribute)service).Name == name);
 

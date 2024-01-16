@@ -208,6 +208,11 @@ namespace Ryujinx.UI.Common.Configuration
         public bool EnablePtc { get; set; }
 
         /// <summary>
+        /// Enables or disables service low-level emulation
+        /// </summary>
+        public bool EnableServiceLLE { get; set; }
+
+        /// <summary>
         /// Enables or disables guest Internet access
         /// </summary>
         public bool EnableInternetAccess { get; set; }

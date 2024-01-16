@@ -272,6 +272,7 @@ namespace Ryujinx.HLE.HOS
             ServiceTable = new ServiceTable();
             var services = ServiceTable.GetServices(new HorizonOptions
                 (Device.Configuration.IgnoreMissingServices,
+                Device.Configuration.EnableServiceLLE,
                 LibHacHorizonManager.BcatClient,
                 fsClient,
                 AccountManager,

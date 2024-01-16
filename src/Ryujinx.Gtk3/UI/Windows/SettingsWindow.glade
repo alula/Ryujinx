@@ -1560,6 +1560,24 @@
                                   </packing>
                                 </child>
                                 <child>
+                                  <object class="GtkCheckButton" id="_serviceLLEToggle">
+                                    <property name="label" translatable="yes">Enable Service LLE</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">False</property>
+                                    <property name="tooltip-text" translatable="yes">Saves translated JIT functions so that they do not need to be translated every time the game loads.&#13;Reduces stuttering and significantly speeds up boot times after the first boot of a game.&#13;Leave ON if unsure.</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-top">5</property>
+                                    <property name="margin-bottom">5</property>
+                                    <property name="draw-indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">5</property>
+                                  </packing>
+                                </child>
+                                <child>
                                   <object class="GtkCheckButton" id="_ptcToggle">
                                     <property name="label" translatable="yes">Enable PPTC (Profiled Persistent Translation Cache)</property>
                                     <property name="visible">True</property>

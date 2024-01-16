@@ -10,6 +10,7 @@ namespace Ryujinx.Horizon
     {
         public bool IgnoreMissingServices { get; }
         public bool ThrowOnInvalidCommandIds { get; }
+        public bool EnableServiceLLE { get; }
 
         public HorizonClient BcatClient { get; }
         public IFsClient FsClient { get; }
@@ -19,6 +20,7 @@ namespace Ryujinx.Horizon
 
         public HorizonOptions(
             bool ignoreMissingServices,
+            bool enableServiceLLE,
             HorizonClient bcatClient,
             IFsClient fsClient,
             IEmulatorAccountManager accountManager,
@@ -26,6 +28,7 @@ namespace Ryujinx.Horizon
             ITickSource tickSource)
         {
             IgnoreMissingServices = ignoreMissingServices;
+            EnableServiceLLE = enableServiceLLE;
             ThrowOnInvalidCommandIds = true;
             BcatClient = bcatClient;
             FsClient = fsClient;

@@ -322,6 +322,11 @@ namespace Ryujinx.UI.Common.Configuration
             public ReactiveObject<bool> EnablePtc { get; private set; }
 
             /// <summary>
+            /// Enables or disables service low-level emulation
+            /// </summary>
+            public ReactiveObject<bool> EnableServiceLLE { get; private set; }
+
+            /// <summary>
             /// Enables or disables guest Internet access
             /// </summary>
             public ReactiveObject<bool> EnableInternetAccess { get; private set; }
@@ -376,6 +381,8 @@ namespace Ryujinx.UI.Common.Configuration
                 EnableDockedMode.Event += static (sender, e) => LogValueChange(e, nameof(EnableDockedMode));
                 EnablePtc = new ReactiveObject<bool>();
                 EnablePtc.Event += static (sender, e) => LogValueChange(e, nameof(EnablePtc));
+                EnableServiceLLE = new ReactiveObject<bool>();
+                EnableServiceLLE.Event += static (sender, e) => LogValueChange(e, nameof(EnableServiceLLE));
                 EnableInternetAccess = new ReactiveObject<bool>();
                 EnableInternetAccess.Event += static (sender, e) => LogValueChange(e, nameof(EnableInternetAccess));
                 EnableFsIntegrityChecks = new ReactiveObject<bool>();
@@ -700,6 +707,7 @@ namespace Ryujinx.UI.Common.Configuration
                 EnableMacroHLE = Graphics.EnableMacroHLE,
                 EnableColorSpacePassthrough = Graphics.EnableColorSpacePassthrough,
                 EnablePtc = System.EnablePtc,
+                EnableServiceLLE = System.EnableServiceLLE,
                 EnableInternetAccess = System.EnableInternetAccess,
                 EnableFsIntegrityChecks = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode = System.FsGlobalAccessLogMode,
@@ -812,6 +820,7 @@ namespace Ryujinx.UI.Common.Configuration
             Graphics.ScalingFilter.Value = ScalingFilter.Bilinear;
             Graphics.ScalingFilterLevel.Value = 80;
             System.EnablePtc.Value = true;
+            System.EnableServiceLLE.Value = false;
             System.EnableInternetAccess.Value = false;
             System.EnableFsIntegrityChecks.Value = true;
             System.FsGlobalAccessLogMode.Value = 0;
@@ -1455,6 +1464,8 @@ namespace Ryujinx.UI.Common.Configuration
                 {
                     AppDataManager.FixMacOSConfigurationFolders();
                 }
+                
+                configurationFileFormat.EnableServiceLLE = false;
 
                 configurationFileUpdated = true;
             }
@@ -1516,6 +1527,7 @@ namespace Ryujinx.UI.Common.Configuration
             Graphics.EnableMacroHLE.Value = configurationFileFormat.EnableMacroHLE;
             Graphics.EnableColorSpacePassthrough.Value = configurationFileFormat.EnableColorSpacePassthrough;
             System.EnablePtc.Value = configurationFileFormat.EnablePtc;
+            System.EnableServiceLLE.Value = configurationFileFormat.EnableServiceLLE;
             System.EnableInternetAccess.Value = configurationFileFormat.EnableInternetAccess;
             System.EnableFsIntegrityChecks.Value = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value = configurationFileFormat.FsGlobalAccessLogMode;
