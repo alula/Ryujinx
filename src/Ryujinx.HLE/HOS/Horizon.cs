@@ -547,10 +547,11 @@ namespace Ryujinx.HLE.HOS
 
                 AudioRendererManager.Dispose();
 
-                if (LibHacHorizonManager.ApplicationClient != null)
+                foreach (var client in LibHacHorizonManager.ApplicationClients)
                 {
-                    LibHacHorizonManager.PmClient.Fs.UnregisterProgram(LibHacHorizonManager.ApplicationClient.Os.GetCurrentProcessId().Value).ThrowIfFailure();
+                    LibHacHorizonManager.PmClient.Fs.UnregisterProgram(client.Value.Os.GetCurrentProcessId().Value).ThrowIfFailure();
                 }
+                LibHacHorizonManager.ApplicationClients.Clear();
 
                 KernelContext.Dispose();
             }

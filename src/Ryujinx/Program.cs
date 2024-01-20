@@ -84,7 +84,7 @@ namespace Ryujinx
             // Hook unhandled exception and process exit events.
             GLib.ExceptionManager.UnhandledException += (GLib.UnhandledExceptionArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
             AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
-            AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) => Exit();
+            // AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) => Exit();
 
             // Make process DPI aware for proper window sizing on high-res screens.
             ForceDpiAware.Windows();
@@ -362,10 +362,11 @@ namespace Ryujinx
                 Logger.Notice.PrintMsg(LogClass.Application, message);
             }
 
-            if (isTerminating)
-            {
-                Exit();
-            }
+            // if (isTerminating)
+            // {
+            //     Exit();
+            // }
+            Environment.Exit(1);
         }
 
         public static void Exit()

@@ -32,6 +32,11 @@ namespace Ryujinx.HLE.Loaders.Processes
             _processesByPid = new ConcurrentDictionary<ulong, ProcessResult>();
         }
 
+        public ProcessResult GetProcess(ulong pid)
+        {
+            return _processesByPid[pid];
+        }
+
         public bool LoadXci(string path)
         {
             FileStream stream = new(path, FileMode.Open, FileAccess.Read);
