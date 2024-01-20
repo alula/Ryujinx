@@ -461,10 +461,17 @@ namespace Ryujinx.HLE.HOS
                 // This is safe as KThread that are likely to call ioctls are going to be terminated by the post handler hook on the SVC facade.
                 INvDrvServices.Destroy();
 
-                if (LibHacHorizonManager.ApplicationClient != null)
+                AudioManager.Dispose();
+                AudioOutputManager.Dispose();
+                AudioInputManager.Dispose();
+
+                AudioRendererManager.Dispose();
+
+                foreach (var client in LibHacHorizonManager.ApplicationClients)
                 {
-                    LibHacHorizonManager.PmClient.Fs.UnregisterProgram(LibHacHorizonManager.ApplicationClient.Os.GetCurrentProcessId().Value).ThrowIfFailure();
+                    LibHacHorizonManager.PmClient.Fs.UnregisterProgram(client.Value.Os.GetCurrentProcessId().Value).ThrowIfFailure();
                 }
+                LibHacHorizonManager.ApplicationClients.Clear();
 
                 KernelContext.Dispose();
             }

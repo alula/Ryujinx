@@ -66,10 +66,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         public ResultCode GetRelayService(ServiceCtx context)
         {
             // FIXME: Should be _serviceType != ViServiceType.Application but guests crashes if we do this check.
-            if (_serviceType > ViServiceType.System)
-            {
-                return ResultCode.PermissionDenied;
-            }
+            // if (_serviceType > ViServiceType.System)
+            // {
+            //     return ResultCode.PermissionDenied;
+            // }
 
             MakeObject(context, new HOSBinderDriverServer());
 
@@ -81,10 +81,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         public ResultCode GetSystemDisplayService(ServiceCtx context)
         {
             // FIXME: Should be _serviceType == ViServiceType.System but guests crashes if we do this check.
-            if (_serviceType > ViServiceType.System)
-            {
-                return ResultCode.PermissionDenied;
-            }
+            // if (_serviceType > ViServiceType.System)
+            // {
+            //     return ResultCode.PermissionDenied;
+            // }
 
             MakeObject(context, new ISystemDisplayService(this));
 
@@ -95,10 +95,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         // GetManagerDisplayService() -> object<nn::visrv::sf::IManagerDisplayService>
         public ResultCode GetManagerDisplayService(ServiceCtx context)
         {
-            if (_serviceType > ViServiceType.System)
-            {
-                return ResultCode.PermissionDenied;
-            }
+            // if (_serviceType > ViServiceType.System)
+            // {
+            //     return ResultCode.PermissionDenied;
+            // }
 
             MakeObject(context, new IManagerDisplayService(this));
 
@@ -109,10 +109,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         // GetIndirectDisplayTransactionService() -> object<nns::hosbinder::IHOSBinderDriver>
         public ResultCode GetIndirectDisplayTransactionService(ServiceCtx context)
         {
-            if (_serviceType > ViServiceType.System)
-            {
-                return ResultCode.PermissionDenied;
-            }
+            // if (_serviceType > ViServiceType.System)
+            // {
+            //     return ResultCode.PermissionDenied;
+            // }
 
             MakeObject(context, new HOSBinderDriverServer());
 

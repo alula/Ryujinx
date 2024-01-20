@@ -243,10 +243,11 @@ namespace Ryujinx.Ava
                 Logger.Notice.PrintMsg(LogClass.Application, message);
             }
 
-            if (isTerminating)
-            {
-                Exit();
-            }
+            // if (isTerminating)
+            // {
+            //     Exit();
+            // }
+            Environment.Exit(1);
         }
 
         public static void Exit()

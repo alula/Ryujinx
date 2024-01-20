@@ -77,18 +77,39 @@ namespace Ryujinx.HLE
         }
 
         public static readonly HashSet<string> ServiceLLEBlacklist = new() {
+            // glue
             "bgtc:t",
             "notif:a",
             "notif:s",
+            
+            // npns
             "npns:s",
             "npns:u",
+            
+            // settings
             "set:cal",
             "set:fd",
             "set:sys",
-            "acc:su",
-            "acc:u0",
-            "acc:u1",
-            "acc:aa",
+            
+            // // account
+            // "acc:su",
+            // "acc:u0",
+            // "acc:u1",
+            // "acc:aa",
+            
+            // // fatal
+            // "fatal:u",
+            // "fatal:p",
+            
+            // am
+            "appletAE",
+            "appletOE",
+            // "idle:sys",
+            // "omm",
+            // "spsm",
+            "tcap",
+            "caps:su",
+            "apm"
         };
 
         public void BootSystem()
@@ -100,17 +121,31 @@ namespace Ryujinx.HLE
 
             LoadSystemTitleId(SystemProgramId.Settings.Value);
             WaitServiceRegistered("set:sys");
+
+            LoadSystemTitleId(SystemProgramId.Am.Value);
+            WaitServiceRegistered("appletAE");
+
             // LoadSystemTitleId(SystemProgramId.Pgl.Value);
             // WaitServiceRegistered("pgl");
+
             // LoadSystemTitleId(SystemProgramId.Ns.Value);
             // WaitServiceRegistered("ns:am");
+
             // LoadSystemTitleId(SystemProgramId.Ssl.Value);
             // WaitServiceRegistered("ssl");
+
             LoadSystemTitleId(SystemProgramId.Glue.Value);
             WaitServiceRegistered("bgtc:t");
-            LoadSystemTitleId(SystemProgramId.Account.Value);
-            WaitServiceRegistered("acc:aa");
+
+            // LoadSystemTitleId(SystemProgramId.Account.Value);
+            // WaitServiceRegistered("acc:aa");
+
             LoadSystemTitleId(SystemProgramId.Npns.Value);
+
+            // LoadSystemTitleId(SystemProgramId.Fatal.Value); // requires bus reimpl
+            // WaitServiceRegistered("fatal:u");
+
+
             // LoadSystemTitleId(0x0100000000001000); // qlaunch
         }
 

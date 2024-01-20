@@ -1896,7 +1896,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 // TODO: Debug events.
                 currentThread.Owner.TerminateCurrentProcess();
 
-                throw new GuestBrokeExecutionException();
+                // throw new GuestBrokeExecutionException();
             }
             else
             {

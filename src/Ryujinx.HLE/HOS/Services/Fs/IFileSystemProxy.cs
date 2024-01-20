@@ -25,15 +25,24 @@ namespace Ryujinx.HLE.HOS.Services.Fs
     [Service("fsp-srv")]
     class IFileSystemProxy : DisposableIpcService
     {
-        private SharedRef<LibHac.FsSrv.Sf.IFileSystemProxy> _baseFileSystemProxy;
+        private Switch _device;
+        private SharedRef<LibHac.FsSrv.Sf.IFileSystemProxy> _baseFileSystemProxy {
+            get {
+                // var proc = _device.Processes.GetProcess(_pid);
+                var proc = _device.Processes.ActiveApplication;
+                var applicationClient = _device.System.LibHacHorizonManager.ApplicationClients[new ProgramId(proc.ProgramId)];
+                return applicationClient.Fs.Impl.GetFileSystemProxyServiceObject();
+            }
+        }
         private ulong _pid;
 
         public IFileSystemProxy(ServiceCtx context) : base(context.Device.System.FsServer)
         {
+            _device = context.Device;
             // TODO: HACK to make things easier, we should Use proper client instances for specified PIDs, right now we're using the privileged client for everything.
+            // var applicationClient = context.Device.System.LibHacHorizonManager.RyujinxClient;
             // var applicationClient = context.Device.System.LibHacHorizonManager.ApplicationClient;
-            var applicationClient = context.Device.System.LibHacHorizonManager.RyujinxClient;
-            _baseFileSystemProxy = applicationClient.Fs.Impl.GetFileSystemProxyServiceObject();
+            // _baseFileSystemProxy = applicationClient.Fs.Impl.GetFileSystemProxyServiceObject();
         }
 
         [CommandCmif(1)]
@@ -787,7 +796,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // OpenDataStorageByCurrentProcess() -> object<nn::fssrv::sf::IStorage> dataStorage
         public ResultCode OpenDataStorageByCurrentProcess(ServiceCtx context)
         {
-            try {
+            try
+            {
                 var storage = context.Device.FileSystem.GetRomFs(_pid).AsStorage(true);
                 using var sharedStorage = new SharedRef<LibHac.Fs.IStorage>(storage);
                 using var sfStorage = new SharedRef<IStorage>(new StorageInterfaceAdapter(ref sharedStorage.Ref));
@@ -795,7 +805,10 @@ namespace Ryujinx.HLE.HOS.Services.Fs
                 MakeObject(context, new FileSystemProxy.IStorage(ref sfStorage.Ref));
 
                 return ResultCode.Success;
-            } catch (KeyNotFoundException) {
+            }
+            catch (KeyNotFoundException)
+            {
+                Logger.Error?.Print(LogClass.ServiceFs, $"No RomFS found for PID={_pid}");
                 return ResultCode.PathDoesNotExist;
             }
         }

@@ -143,6 +143,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             if (layer == null || layer.State != LayerState.ManagedClosed)
             {
+                Logger.Warning?.Print(LogClass.SurfaceFlinger, $"Layer {layerId} not found or not closed {layer?.State}");
                 producer = null;
 
                 return Vi.ResultCode.InvalidArguments;

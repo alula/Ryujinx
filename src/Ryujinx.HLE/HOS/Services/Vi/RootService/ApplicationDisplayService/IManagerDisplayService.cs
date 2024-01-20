@@ -67,16 +67,34 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
         // AddToLayerStack(u32, u64)
         public ResultCode AddToLayerStack(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceVi);
+            uint stack = context.RequestData.ReadUInt32();
+            ulong layerId = context.RequestData.ReadUInt64();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceVi, new { stack, layerId });
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(6001)]
+        // RemoveFromLayerStack(u32, u64)
+        public ResultCode RemoveFromLayerStack(ServiceCtx context)
+        {
+            uint stack = context.RequestData.ReadUInt32();
+            ulong layerId = context.RequestData.ReadUInt64();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceVi, new { stack, layerId });
 
             return ResultCode.Success;
         }
 
         [CommandCmif(6002)]
-        // SetLayerVisibility(b8, u64)
+        // SetLayerVisibility(u64, bool)
         public ResultCode SetLayerVisibility(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceVi);
+            ulong layerId = context.RequestData.ReadUInt64();
+            bool visibility = context.RequestData.ReadBoolean();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceVi, new { layerId, visibility });
 
             return ResultCode.Success;
         }
