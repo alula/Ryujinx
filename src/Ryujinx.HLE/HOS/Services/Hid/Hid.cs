@@ -4,6 +4,7 @@ using Ryujinx.Common.Memory;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory;
+using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Button;
 using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common;
 using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.DebugPad;
 using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Keyboard;
@@ -30,6 +31,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         public MouseDevice Mouse;
         public KeyboardDevice Keyboard;
         public NpadDevices Npads;
+        public ButtonDevice HomeButton;
+        public ButtonDevice SleepButton;
+        public ButtonDevice CaptureButton;
 
         private static void CheckTypeSizeOrThrow<T>(int expectedSize)
         {
@@ -45,6 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             CheckTypeSizeOrThrow<RingLifo<TouchScreenState>>(0x2C38);
             CheckTypeSizeOrThrow<RingLifo<MouseState>>(0x350);
             CheckTypeSizeOrThrow<RingLifo<KeyboardState>>(0x3D8);
+            CheckTypeSizeOrThrow<RingLifo<ButtonState>>(0x1B8);
             CheckTypeSizeOrThrow<Array10<NpadState>>(0x32000);
             CheckTypeSizeOrThrow<SharedMemory>(Horizon.HidSize);
         }
@@ -66,6 +71,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             Mouse = new MouseDevice(_device, false);
             Keyboard = new KeyboardDevice(_device, false);
             Npads = new NpadDevices(_device, true);
+            HomeButton = new ButtonDevice(_device, true, ButtonDeviceType.HomeButton);
+            SleepButton = new ButtonDevice(_device, true, ButtonDeviceType.SleepButton);
+            CaptureButton = new ButtonDevice(_device, true, ButtonDeviceType.CaptureButton);
         }
 
         public void RefreshInputConfig(List<InputConfig> inputConfig)

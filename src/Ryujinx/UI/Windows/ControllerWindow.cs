@@ -104,6 +104,8 @@ namespace Ryujinx.UI.Windows
         [GUI] ToggleButton _lSr;
         [GUI] ToggleButton _rSl;
         [GUI] ToggleButton _rSr;
+        [GUI] ToggleButton _home;
+        [GUI] ToggleButton _capture;
         [GUI] Image _controllerImage;
         [GUI] CheckButton _enableRumble;
         [GUI] Box _rumbleBox;
@@ -182,6 +184,8 @@ namespace Ryujinx.UI.Windows
             _zR.Clicked += Button_Pressed;
             _rSl.Clicked += Button_Pressed;
             _rSr.Clicked += Button_Pressed;
+            _home.Clicked += Button_Pressed;
+            _capture.Clicked += Button_Pressed;
             _enableCemuHook.Clicked += CemuHookCheckButtonPressed;
 
             // Setup current values.
@@ -417,6 +421,8 @@ namespace Ryujinx.UI.Windows
             _zR.Label = "Unbound";
             _rSl.Label = "Unbound";
             _rSr.Label = "Unbound";
+            _home.Label = "Unbound";
+            _capture.Label = "Unbound";
             _controllerStrongRumble.Value = 1;
             _controllerWeakRumble.Value = 1;
             _controllerDeadzoneLeft.Value = 0;
@@ -462,6 +468,7 @@ namespace Ryujinx.UI.Windows
                     _zL.Label = keyboardConfig.LeftJoycon.ButtonZl.ToString();
                     _lSl.Label = keyboardConfig.LeftJoycon.ButtonSl.ToString();
                     _lSr.Label = keyboardConfig.LeftJoycon.ButtonSr.ToString();
+                    _capture.Label = keyboardConfig.LeftJoycon.ButtonCapture.ToString();
                     _rStickUp.Label = keyboardConfig.RightJoyconStick.StickUp.ToString();
                     _rStickDown.Label = keyboardConfig.RightJoyconStick.StickDown.ToString();
                     _rStickLeft.Label = keyboardConfig.RightJoyconStick.StickLeft.ToString();
@@ -476,6 +483,7 @@ namespace Ryujinx.UI.Windows
                     _zR.Label = keyboardConfig.RightJoycon.ButtonZr.ToString();
                     _rSl.Label = keyboardConfig.RightJoycon.ButtonSl.ToString();
                     _rSr.Label = keyboardConfig.RightJoycon.ButtonSr.ToString();
+                    _home.Label = keyboardConfig.RightJoycon.ButtonHome.ToString();
                     break;
 
                 case StandardControllerInputConfig controllerConfig:
@@ -500,6 +508,7 @@ namespace Ryujinx.UI.Windows
                     _zL.Label = controllerConfig.LeftJoycon.ButtonZl.ToString();
                     _lSl.Label = controllerConfig.LeftJoycon.ButtonSl.ToString();
                     _lSr.Label = controllerConfig.LeftJoycon.ButtonSr.ToString();
+                    _capture.Label = controllerConfig.LeftJoycon.ButtonCapture.ToString();
                     _rStick.Label = controllerConfig.RightJoyconStick.Joystick.ToString();
                     _invertRStickX.Active = controllerConfig.RightJoyconStick.InvertStickX;
                     _invertRStickY.Active = controllerConfig.RightJoyconStick.InvertStickY;
@@ -514,6 +523,7 @@ namespace Ryujinx.UI.Windows
                     _zR.Label = controllerConfig.RightJoycon.ButtonZr.ToString();
                     _rSl.Label = controllerConfig.RightJoycon.ButtonSl.ToString();
                     _rSr.Label = controllerConfig.RightJoycon.ButtonSr.ToString();
+                    _home.Label = controllerConfig.RightJoycon.ButtonHome.ToString();
                     _controllerStrongRumble.Value = controllerConfig.Rumble.StrongRumble;
                     _controllerWeakRumble.Value = controllerConfig.Rumble.WeakRumble;
                     _enableRumble.Active = controllerConfig.Rumble.EnableRumble;
@@ -568,6 +578,7 @@ namespace Ryujinx.UI.Windows
                 Enum.TryParse(_zL.Label,           out Key lButtonZl);
                 Enum.TryParse(_lSl.Label,          out Key lButtonSl);
                 Enum.TryParse(_lSr.Label,          out Key lButtonSr);
+                Enum.TryParse(_capture.Label,      out Key lButtonCapture);
 
                 Enum.TryParse(_rStickUp.Label,     out Key rStickUp);
                 Enum.TryParse(_rStickDown.Label,   out Key rStickDown);
@@ -583,6 +594,7 @@ namespace Ryujinx.UI.Windows
                 Enum.TryParse(_zR.Label,           out Key rButtonZr);
                 Enum.TryParse(_rSl.Label,          out Key rButtonSl);
                 Enum.TryParse(_rSr.Label,          out Key rButtonSr);
+                Enum.TryParse(_home.Label,         out Key rButtonHome);
 #pragma warning restore CA1806, IDE0055
 
                 return new StandardKeyboardInputConfig
@@ -599,6 +611,7 @@ namespace Ryujinx.UI.Windows
                         ButtonZl = lButtonZl,
                         ButtonSl = lButtonSl,
                         ButtonSr = lButtonSr,
+                        ButtonCapture = lButtonCapture,
                         DpadUp = lDPadUp,
                         DpadDown = lDPadDown,
                         DpadLeft = lDPadLeft,
@@ -623,6 +636,7 @@ namespace Ryujinx.UI.Windows
                         ButtonZr = rButtonZr,
                         ButtonSl = rButtonSl,
                         ButtonSr = rButtonSr,
+                        ButtonHome = rButtonHome,
                     },
                     RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                     {
@@ -645,6 +659,7 @@ namespace Ryujinx.UI.Windows
                 Enum.TryParse(_zL.Label,           out ConfigGamepadInputId lButtonZl);
                 Enum.TryParse(_lSl.Label,          out ConfigGamepadInputId lButtonSl);
                 Enum.TryParse(_lSr.Label,          out ConfigGamepadInputId lButtonSr);
+                Enum.TryParse(_capture.Label,      out ConfigGamepadInputId lButtonCapture);
                 Enum.TryParse(_dpadUp.Label,       out ConfigGamepadInputId lDPadUp);
                 Enum.TryParse(_dpadDown.Label,     out ConfigGamepadInputId lDPadDown);
                 Enum.TryParse(_dpadLeft.Label,     out ConfigGamepadInputId lDPadLeft);
@@ -661,6 +676,7 @@ namespace Ryujinx.UI.Windows
                 Enum.TryParse(_zR.Label,           out ConfigGamepadInputId rButtonZr);
                 Enum.TryParse(_rSl.Label,          out ConfigGamepadInputId rButtonSl);
                 Enum.TryParse(_rSr.Label,          out ConfigGamepadInputId rButtonSr);
+                Enum.TryParse(_home.Label,         out ConfigGamepadInputId rButtonHome);
 
                 int.TryParse(_dsuServerPort.Buffer.Text, out int port);
 #pragma warning restore CA1806, IDE0055
@@ -712,6 +728,7 @@ namespace Ryujinx.UI.Windows
                         ButtonZl = lButtonZl,
                         ButtonSl = lButtonSl,
                         ButtonSr = lButtonSr,
+                        ButtonCapture = lButtonCapture,
                         DpadUp = lDPadUp,
                         DpadDown = lDPadDown,
                         DpadLeft = lDPadLeft,
@@ -736,6 +753,7 @@ namespace Ryujinx.UI.Windows
                         ButtonZr = rButtonZr,
                         ButtonSl = rButtonSl,
                         ButtonSr = rButtonSr,
+                        ButtonHome = rButtonHome,
                     },
                     RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {
@@ -999,6 +1017,7 @@ namespace Ryujinx.UI.Windows
                             ButtonZl = Key.Q,
                             ButtonSl = Key.Unbound,
                             ButtonSr = Key.Unbound,
+                            ButtonCapture = Key.F12,
                         },
 
                         LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
@@ -1021,6 +1040,7 @@ namespace Ryujinx.UI.Windows
                             ButtonZr = Key.O,
                             ButtonSl = Key.Unbound,
                             ButtonSr = Key.Unbound,
+                            ButtonHome = Key.F11,
                         },
 
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>
@@ -1059,6 +1079,7 @@ namespace Ryujinx.UI.Windows
                             ButtonZl = ConfigGamepadInputId.LeftTrigger,
                             ButtonSl = ConfigGamepadInputId.Unbound,
                             ButtonSr = ConfigGamepadInputId.Unbound,
+                            ButtonCapture = ConfigGamepadInputId.Misc1,
                         },
 
                         LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
@@ -1081,6 +1102,7 @@ namespace Ryujinx.UI.Windows
                             ButtonZr = ConfigGamepadInputId.RightTrigger,
                             ButtonSl = ConfigGamepadInputId.Unbound,
                             ButtonSr = ConfigGamepadInputId.Unbound,
+                            ButtonHome = ConfigGamepadInputId.Guide,
                         },
 
                         RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
