@@ -1,6 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Hid.HidServer;
 using Ryujinx.HLE.HOS.Services.Hid.Types;
 using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common;
 using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Npad;
@@ -32,6 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         internal NpadJoyHoldType JoyHold { get; set; }
         internal bool SixAxisActive = false; // TODO: link to hidserver when implemented
         internal ControllerType SupportedStyleSets { get; set; }
+        internal PlayerIndex LastActiveNpad { get; set; }
 
         public Dictionary<PlayerIndex, ConcurrentQueue<(VibrationValue, VibrationValue)>> RumbleQueues = new();
         public Dictionary<PlayerIndex, (VibrationValue, VibrationValue)> LastVibrationValues = new();
@@ -383,6 +385,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             {
                 return;
             }
+
+            // TODO: is this correct?
+            LastActiveNpad = state.PlayerId;
 
             ref RingLifo<NpadCommonState> lifo = ref GetCommonStateLifo(ref currentNpad);
 

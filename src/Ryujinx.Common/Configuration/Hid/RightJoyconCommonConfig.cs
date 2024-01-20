@@ -11,5 +11,6 @@ namespace Ryujinx.Common.Configuration.Hid
         public TButton ButtonB { get; set; }
         public TButton ButtonY { get; set; }
         public TButton ButtonA { get; set; }
+        public TButton ButtonHome { get; set; }
     }
 }

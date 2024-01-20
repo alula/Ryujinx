@@ -901,6 +901,7 @@ namespace Ryujinx.UI.Common.Configuration
                         ButtonZl = Key.Q,
                         ButtonSl = Key.Unbound,
                         ButtonSr = Key.Unbound,
+                        ButtonCapture = Key.F12,
                     },
                     LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
                     {
@@ -921,6 +922,7 @@ namespace Ryujinx.UI.Common.Configuration
                         ButtonZr = Key.O,
                         ButtonSl = Key.Unbound,
                         ButtonSr = Key.Unbound,
+                        ButtonHome = Key.F11,
                     },
                     RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                     {
@@ -1130,6 +1132,7 @@ namespace Ryujinx.UI.Common.Configuration
                             ButtonZl = Key.Q,
                             ButtonSl = Key.Unbound,
                             ButtonSr = Key.Unbound,
+                            ButtonCapture = Key.F12,
                         },
                         LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
                         {
@@ -1150,6 +1153,7 @@ namespace Ryujinx.UI.Common.Configuration
                             ButtonZr = Key.O,
                             ButtonSl = Key.Unbound,
                             ButtonSr = Key.Unbound,
+                            ButtonHome = Key.F11,
                         },
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                         {
