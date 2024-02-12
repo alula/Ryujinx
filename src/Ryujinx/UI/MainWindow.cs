@@ -924,7 +924,6 @@ namespace Ryujinx.UI
                     isFirmwareTitle = true;
                 }
 
-                Translator.IsReadyForTranslation.Set();
                 _emulationContext.BootSystem();
 
                 if (!LoadApplication(path, isFirmwareTitle))

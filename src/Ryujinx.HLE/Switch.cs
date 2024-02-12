@@ -100,15 +100,15 @@ namespace Ryujinx.HLE
             // "fatal:u",
             // "fatal:p",
             
-            // am
-            "appletAE",
-            "appletOE",
-            // "idle:sys",
-            // "omm",
-            // "spsm",
-            "tcap",
-            "caps:su",
-            "apm"
+            // // am
+            // "appletAE",
+            // "appletOE",
+            // // "idle:sys",
+            // // "omm",
+            // // "spsm",
+            // "tcap",
+            // "caps:su",
+            // "apm"
         };
 
         public void BootSystem()
@@ -121,8 +121,8 @@ namespace Ryujinx.HLE
             LoadSystemTitleId(SystemProgramId.Settings.Value);
             WaitServiceRegistered("set:sys");
 
-            LoadSystemTitleId(SystemProgramId.Am.Value);
-            WaitServiceRegistered("appletAE");
+            // LoadSystemTitleId(SystemProgramId.Am.Value);
+            // WaitServiceRegistered("appletAE");
 
             // LoadSystemTitleId(SystemProgramId.Pgl.Value);
             // WaitServiceRegistered("pgl");
