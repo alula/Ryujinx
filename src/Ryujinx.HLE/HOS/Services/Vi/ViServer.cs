@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             KernelStatic.GetCurrentProcess().CpuMemory.Fill(heapAddress, totalSize, 0xff);
 
-            int mapId = NvMapDeviceFile.CreateMap(pid, heapAddress, (int)totalSize);
+            int mapId = NvMapDeviceFile.CreateMap(pid, heapAddress, (uint)totalSize);
 
             _bufferNvMapId = mapId;
             _bufferMap.Count = TotalFramebuffers;
