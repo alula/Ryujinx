@@ -190,7 +190,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // CanUseApplicationCore() -> bool
         public ResultCode CanUseApplicationCore(ServiceCtx context)
         {
-            context.ResponseData.Write(true);
+            context.ResponseData.Write(false);
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 

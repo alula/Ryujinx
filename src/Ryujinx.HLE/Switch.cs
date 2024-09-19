@@ -82,20 +82,20 @@ namespace Ryujinx.HLE
             "notif:a",
             "notif:s",
             
-            // npns
-            "npns:s",
-            "npns:u",
+            // // npns
+            // "npns:s",
+            // "npns:u",
             
             // settings
             "set:cal",
             "set:fd",
             "set:sys",
             
-            // // account
-            // "acc:su",
-            // "acc:u0",
-            // "acc:u1",
-            // "acc:aa",
+            // account
+            "acc:su",
+            "acc:u0",
+            "acc:u1",
+            "acc:aa",
             
             // // fatal
             // "fatal:u",
@@ -137,10 +137,10 @@ namespace Ryujinx.HLE
             LoadSystemTitleId(SystemProgramId.Glue.Value);
             WaitServiceRegistered("bgtc:t");
 
-            // LoadSystemTitleId(SystemProgramId.Account.Value);
-            // WaitServiceRegistered("acc:aa");
+            LoadSystemTitleId(SystemProgramId.Account.Value);
+            WaitServiceRegistered("acc:aa");
 
-            LoadSystemTitleId(SystemProgramId.Npns.Value);
+            // LoadSystemTitleId(SystemProgramId.Npns.Value);
 
             // LoadSystemTitleId(SystemProgramId.Fatal.Value); // requires bus reimpl
             // WaitServiceRegistered("fatal:u");

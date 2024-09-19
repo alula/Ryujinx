@@ -47,6 +47,10 @@ namespace Ryujinx.HLE.HOS.Applets
         // 0x37 	[17.0.0+] 0100000000001010 ([16.0.0-16.1.0] 0100000000001042) 	[17.0.0+] LibraryAppletLoginShare (loginShare) ([16.0.0-16.1.0] ) 
         private static readonly Dictionary<AppletId, ulong> _appletTitles = new Dictionary<AppletId, ulong>
         {
+            { AppletId.Auth,             0x0100000000001001 },
+            { AppletId.Cabinet,          0x0100000000001002 },
+            { AppletId.Controller,       0x0100000000001003 },
+            { AppletId.DataErase,        0x0100000000001004 },
             { AppletId.Error,            0x0100000000001005 },
             { AppletId.NetConnect,       0x0100000000001006 },
             { AppletId.PlayerSelect,     0x0100000000001007 },
@@ -54,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Applets
             { AppletId.MiiEdit,          0x0100000000001009 },
             { AppletId.LibAppletWeb,     0x010000000000100A },
             { AppletId.LibAppletShop,    0x010000000000100B },
-            { AppletId.Controller,       0x010000000000100C },
+            { AppletId.OverlayDisplay,   0x010000000000100C },
             { AppletId.PhotoViewer,      0x010000000000100D },
             { AppletId.Settings,         0x010000000000100E },
             { AppletId.LibAppletOff,     0x010000000000100F },
@@ -65,6 +69,7 @@ namespace Ryujinx.HLE.HOS.Applets
         public AppletId AppletId { get; private set; }
         public AppletSession NormalSession { get; private set; }
         public AppletSession InteractiveSession { get; private set; }
+        public ulong TitleId { get { return _appletTitles.GetValueOrDefault(AppletId); } }
 
         public event EventHandler AppletStateChanged;
 

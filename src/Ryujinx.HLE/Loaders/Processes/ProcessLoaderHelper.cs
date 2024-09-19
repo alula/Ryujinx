@@ -435,16 +435,19 @@ namespace Ryujinx.HLE.Loaders.Processes
 
             // Register everything in arp service.
             device.System.ServiceTable.ArpWriter.AcquireRegistrar(out IRegistrar registrar);
-            registrar.SetApplicationControlProperty(MemoryMarshal.Cast<byte, Horizon.Sdk.Ns.ApplicationControlProperty>(applicationControlProperties.ByteSpan)[0]);
-            // TODO: Handle Version and StorageId when it will be needed.
-            registrar.SetApplicationLaunchProperty(new ApplicationLaunchProperty()
+            if (registrar != null)
             {
-                ApplicationId = new Horizon.Sdk.Ncm.ApplicationId(programId),
-                Version = 0x00,
-                Storage = Horizon.Sdk.Ncm.StorageId.BuiltInUser,
-                PatchStorage = Horizon.Sdk.Ncm.StorageId.None,
-                ApplicationKind = ApplicationKind.Application,
-            });
+                registrar.SetApplicationControlProperty(MemoryMarshal.Cast<byte, Horizon.Sdk.Ns.ApplicationControlProperty>(applicationControlProperties.ByteSpan)[0]);
+                // TODO: Handle Version and StorageId when it will be needed.
+                registrar.SetApplicationLaunchProperty(new ApplicationLaunchProperty()
+                {
+                    ApplicationId = new Horizon.Sdk.Ncm.ApplicationId(programId),
+                    Version = 0x00,
+                    Storage = Horizon.Sdk.Ncm.StorageId.BuiltInUser,
+                    PatchStorage = Horizon.Sdk.Ncm.StorageId.None,
+                    ApplicationKind = ApplicationKind.Application,
+                });
+            }
 
             device.System.ServiceTable.ArpReader.GetApplicationInstanceId(out ulong applicationInstanceId, process.Pid);
             device.System.ServiceTable.ArpWriter.AcquireApplicationProcessPropertyUpdater(out IUpdater updater, applicationInstanceId);
