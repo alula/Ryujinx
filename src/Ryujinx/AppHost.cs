@@ -123,6 +123,7 @@ namespace Ryujinx.Ava
         private readonly bool _isFirmwareTitle;
 
         private readonly object _lockObject = new();
+        private List<RyuApplicationData> _titles = new();
 
         public event EventHandler AppExit;
         public event EventHandler<StatusInitEventArgs> StatusInitEvent;
@@ -130,7 +131,7 @@ namespace Ryujinx.Ava
 
         public VirtualFileSystem VirtualFileSystem { get; }
         public ContentManager ContentManager { get; }
-        public IImmutableList<RyuApplicationData> Titles { get; }
+        public IImmutableList<RyuApplicationData> Titles { get => _titles.ToImmutableList(); }
         public NpadManager NpadManager { get; }
         public TouchScreenManager TouchScreenManager { get; }
         public Switch Device { get; set; }
