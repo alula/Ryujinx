@@ -191,6 +191,11 @@
                             Text="{locale:Locale SettingsTabSystemEnableFsIntegrityChecks}"
                             ToolTip.Tip="{locale:Locale FsIntegrityToggleTooltip}" />
                     </CheckBox>
+                    <CheckBox IsChecked="{Binding EnableServiceLLE}">
+                        <TextBlock
+                            Text="{locale:Locale SettingsTabSystemEnableServiceLLE}"
+                            ToolTip.Tip="{locale:Locale ServiceLLETooltip}" />
+                    </CheckBox>
                 </StackPanel>
                 <Separator Height="1" />
                 <StackPanel
