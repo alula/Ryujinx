@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             StringBuilder trace = new();
 
-            trace.AppendLine($"Process: {_owner.Name}, PID: {_owner.Pid}");
+            trace.AppendLine($"Process: {_owner.Name}, PID: {_owner.Pid}, Program ID: 0x{_owner.TitleId:x16}");
 
             void AppendTrace(ulong address)
             {
