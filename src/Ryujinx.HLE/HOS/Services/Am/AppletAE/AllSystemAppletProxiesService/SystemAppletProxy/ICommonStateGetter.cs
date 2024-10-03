@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetCurrentFocusState() -> u8
         public ResultCode GetCurrentFocusState(ServiceCtx context)
         {
-            context.ResponseData.Write((byte)context.Device.System.AppletState.FocusState);
+            context.ResponseData.Write((byte)context.Device.System.AppletState.AcknowledgedFocusState);
 
             return ResultCode.Success;
         }

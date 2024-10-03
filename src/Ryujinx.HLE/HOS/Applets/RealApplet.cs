@@ -1,12 +1,12 @@
 using LibHac.Ncm;
 using LibHac.Tools.FsSystem.NcaUtils;
-using Ryujinx.Common.Memory;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
+using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Processes;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
@@ -67,17 +67,23 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private readonly Horizon _system;
         public AppletId AppletId { get; private set; }
+        public ulong AppletResourceUserId { get; private set; }
         public AppletSession NormalSession { get; private set; }
         public AppletSession InteractiveSession { get; private set; }
-        public ulong TitleId { get { return _appletTitles.GetValueOrDefault(AppletId); } }
+        public RealApplet CallerApplet = null;
+        public LinkedList<RealApplet> ChildApplets = new();
 
+        public AppletStateMgr AppletState { get; private set; }
         public event EventHandler AppletStateChanged;
+        public ResultCode TerminateResult = ResultCode.Success;
 
-        private ProcessResult _processResult;
+        public ProcessResult Process;
+        public KProcess ProcessHandle;
 
         public RealApplet(AppletId appletId, Horizon system)
         {
             _system = system;
+            AppletState = new AppletStateMgr(system);
             AppletId = appletId;
         }
 
@@ -98,19 +104,21 @@ namespace Ryujinx.HLE.HOS.Applets
                 contentPath = VirtualFileSystem.SwitchPathToSystemPath(contentPath);
             }
 
-            if (!_system.Device.Processes.LoadNca(contentPath, out _processResult))
+            if (!_system.Device.Processes.LoadNca(contentPath, out Process))
             {
                 return ResultCode.NotAllocated;
             }
 
-            _processResult.RealAppletInstance = this;
+            Process.RealAppletInstance = this;
+            ProcessHandle = _system.KernelContext.Processes[Process.ProcessId];
+            AppletResourceUserId = ProcessHandle.Pid;
 
             return ResultCode.Success;
         }
 
         public ResultCode GetResult()
         {
-            return ResultCode.Success;
+            return TerminateResult;
         }
 
         public void InvokeAppletStateChanged()
