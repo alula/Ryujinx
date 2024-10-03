@@ -152,7 +152,14 @@ namespace Ryujinx.Ava.UI.Views.Main
 
             if (!string.IsNullOrEmpty(contentPath))
             {
-                await ViewModel.LoadApplication(contentPath, false, "qlaunch");
+                ApplicationData applicationData = new()
+                {
+                    Name = "qlaunch",
+                    Id = 0x0100000000001000ul,
+                    Path = contentPath,
+                };
+
+                await ViewModel.LoadApplication(applicationData, ViewModel.IsFullScreen || ViewModel.StartGamesInFullscreen);
             }
         }
 
