@@ -141,12 +141,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             // TODO: RequestData seems to have garbage data, reading an extra uint seems to fix the issue.
             context.RequestData.ReadUInt32();
 
-            ResultCode resultCode = GetAppletFooterUiTypeImpl(context, out AppletFooterUiType appletFooterUiType);
+            context.ResponseData.Write((byte)context.Device.Hid.Npads.GetLastActiveNpadId());
 
-            context.ResponseData.Write((byte)appletFooterUiType);
-            context.ResponseData.Write((byte)0);
-
-            return resultCode;
+            return ResultCode.Success;
         }
 
         [CommandCmif(307)]

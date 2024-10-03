@@ -644,5 +644,20 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             return rumbleQueue;
         }
+
+        public NpadIdType GetLastActiveNpadId()
+        {
+            return LastActiveNpad switch {
+                PlayerIndex.Player1 => NpadIdType.Player1,
+                PlayerIndex.Player2 => NpadIdType.Player2,
+                PlayerIndex.Player3 => NpadIdType.Player3,
+                PlayerIndex.Player4 => NpadIdType.Player4,
+                PlayerIndex.Player5 => NpadIdType.Player5,
+                PlayerIndex.Player6 => NpadIdType.Player6,
+                PlayerIndex.Player7 => NpadIdType.Player7,
+                PlayerIndex.Player8 => NpadIdType.Player8,
+                _ => NpadIdType.Handheld,
+            };
+        }
     }
 }
