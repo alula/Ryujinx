@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Ryujinx.Horizon.Sdk.OsTypes
 {
-    static partial class Os
+    public static partial class Os
     {
         public static void InitializeEvent(out EventType evnt, bool signaled, EventClearMode clearMode)
         {

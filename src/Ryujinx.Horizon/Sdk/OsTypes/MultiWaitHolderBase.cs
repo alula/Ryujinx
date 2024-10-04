@@ -2,9 +2,9 @@ using Ryujinx.Horizon.Sdk.OsTypes.Impl;
 
 namespace Ryujinx.Horizon.Sdk.OsTypes
 {
-    class MultiWaitHolderBase
+    public class MultiWaitHolderBase
     {
-        protected MultiWaitImpl MultiWait;
+        internal MultiWaitImpl MultiWait;
 
         public bool IsLinked => MultiWait != null;
 
@@ -12,12 +12,12 @@ namespace Ryujinx.Horizon.Sdk.OsTypes
 
         public virtual int Handle => 0;
 
-        public void SetMultiWait(MultiWaitImpl multiWait)
+        internal void SetMultiWait(MultiWaitImpl multiWait)
         {
             MultiWait = multiWait;
         }
 
-        public MultiWaitImpl GetMultiWait()
+        internal MultiWaitImpl GetMultiWait()
         {
             return MultiWait;
         }

@@ -1,6 +1,6 @@
 namespace Ryujinx.Horizon.Sdk.OsTypes
 {
-    class MultiWaitHolderOfHandle : MultiWaitHolder
+    public class MultiWaitHolderOfHandle : MultiWaitHolder
     {
         private readonly int _handle;
 

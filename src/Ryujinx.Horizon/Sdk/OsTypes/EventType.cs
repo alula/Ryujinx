@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Horizon.Sdk.OsTypes
 {
-    struct EventType
+    public struct EventType
     {
         public LinkedList<MultiWaitHolderBase> MultiWaitHolders;
         public bool Signaled;

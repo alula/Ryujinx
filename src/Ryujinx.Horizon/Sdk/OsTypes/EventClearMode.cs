@@ -1,6 +1,6 @@
 namespace Ryujinx.Horizon.Sdk.OsTypes
 {
-    enum EventClearMode
+    public enum EventClearMode
     {
         ManualClear,
         AutoClear,

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Horizon.Sdk.OsTypes
 {
-    class Event : IDisposable
+    public class Event : IDisposable
     {
         private EventType _event;
 

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Horizon.Sdk.OsTypes
 {
-    class MultiWaitHolderOfEvent : MultiWaitHolder
+    public class MultiWaitHolderOfEvent : MultiWaitHolder
     {
         private readonly Event _event;
         private LinkedListNode<MultiWaitHolderBase> _node;
