@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Settings.Types;
@@ -16,6 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         private readonly Apm.ManagerServer _apmManagerServer;
         private readonly Apm.SystemManagerServer _apmSystemManagerServer;
+        private readonly RealApplet _applet;
 
         private bool _vrModeEnabled;
 #pragma warning disable CS0414, IDE0052 // Remove unread private member
@@ -28,9 +30,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private readonly KEvent _acquiredSleepLockEvent;
         private int _acquiredSleepLockEventHandle;
 
-        public ICommonStateGetter(ServiceCtx context)
+        public ICommonStateGetter(ServiceCtx context, ulong pid)
         {
             _context = context;
+            _applet = context.Device.System.WindowSystem.GetByAruId(pid);
 
             _apmManagerServer = new Apm.ManagerServer(context);
             _apmSystemManagerServer = new Apm.SystemManagerServer(context);
@@ -42,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetEventHandle() -> handle<copy>
         public ResultCode GetEventHandle(ServiceCtx context)
         {
-            KEvent messageEvent = context.Device.System.AppletState.MessageEvent;
+            KEvent messageEvent = _applet.AppletState.MessageEvent;
 
             if (_messageEventHandle == 0)
             {
@@ -61,25 +64,12 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // ReceiveMessage() -> nn::am::AppletMessage
         public ResultCode ReceiveMessage(ServiceCtx context)
         {
-            if (!context.Device.System.AppletState.Messages.TryDequeue(out AppletMessage message))
+            if (!_applet.AppletState.PopMessage(out AppletMessage message))
             {
                 return ResultCode.NoMessages;
             }
 
-            KEvent messageEvent = context.Device.System.AppletState.MessageEvent;
-
-            // NOTE: Service checks if current states are different than the stored ones.
-            //       Since we don't support any states for now, it's fine to check if there is still messages available.
-
-            if (context.Device.System.AppletState.Messages.IsEmpty)
-            {
-                messageEvent.ReadableEvent.Clear();
-            }
-            else
-            {
-                messageEvent.ReadableEvent.Signal();
-            }
-
+            Logger.Info?.Print(LogClass.ServiceAm, $"pid: {_applet.ProcessHandle.Pid}, msg={message}");
             context.ResponseData.Write((int)message);
 
             return ResultCode.Success;
@@ -120,7 +110,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetCurrentFocusState() -> u8
         public ResultCode GetCurrentFocusState(ServiceCtx context)
         {
-            context.ResponseData.Write((byte)context.Device.System.AppletState.AcknowledgedFocusState);
+            FocusState focusState;
+            lock (_applet.Lock)
+            {
+                focusState = _applet.AppletState.GetAndClearFocusState();
+            }
+            ;
+
+            Logger.Info?.Print(LogClass.ServiceAm, $"pid: {_applet.ProcessHandle.Pid}, GetCurrentFocusState():{focusState}");
+            context.ResponseData.Write((byte)focusState);
 
             return ResultCode.Success;
         }

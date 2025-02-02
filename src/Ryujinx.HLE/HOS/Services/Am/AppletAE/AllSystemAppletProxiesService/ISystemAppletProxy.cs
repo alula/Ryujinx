@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService
         // GetCommonStateGetter() -> object<nn::am::service::ICommonStateGetter>
         public ResultCode GetCommonStateGetter(ServiceCtx context)
         {
-            MakeObject(context, new ICommonStateGetter(context));
+            MakeObject(context, new ICommonStateGetter(context, _pid));
 
             return ResultCode.Success;
         }
@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService
         // GetLibraryAppletCreator() -> object<nn::am::service::ILibraryAppletCreator>
         public ResultCode GetLibraryAppletCreator(ServiceCtx context)
         {
-            MakeObject(context, new ILibraryAppletCreator());
+            MakeObject(context, new ILibraryAppletCreator(context, _pid));
 
             return ResultCode.Success;
         }
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService
         // GetApplicationCreator() -> object<nn::am::service::IApplicationCreator>
         public ResultCode GetApplicationCreator(ServiceCtx context)
         {
-            MakeObject(context, new IApplicationCreator());
+            MakeObject(context, new IApplicationCreator(_pid));
 
             return ResultCode.Success;
         }

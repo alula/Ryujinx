@@ -1,10 +1,6 @@
-using LibHac.Ncm;
-using LibHac.Tools.FsSystem.NcaUtils;
-using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using Ryujinx.HLE.HOS.SystemState;
-using Ryujinx.HLE.Loaders.Processes;
 using System;
 using System.Collections.Generic;
 
@@ -47,6 +43,7 @@ namespace Ryujinx.HLE.HOS.Applets
         // 0x37 	[17.0.0+] 0100000000001010 ([16.0.0-16.1.0] 0100000000001042) 	[17.0.0+] LibraryAppletLoginShare (loginShare) ([16.0.0-16.1.0] ) 
         private static readonly Dictionary<AppletId, ulong> _appletTitles = new Dictionary<AppletId, ulong>
         {
+            { AppletId.QLaunch,          0x0100000000001000 },
             { AppletId.Auth,             0x0100000000001001 },
             { AppletId.Cabinet,          0x0100000000001002 },
             { AppletId.Controller,       0x0100000000001003 },
@@ -62,56 +59,95 @@ namespace Ryujinx.HLE.HOS.Applets
             { AppletId.PhotoViewer,      0x010000000000100D },
             { AppletId.Settings,         0x010000000000100E },
             { AppletId.LibAppletOff,     0x010000000000100F },
+            { AppletId.Starter,          0x0100000000001012 },
             { AppletId.MyPage,           0x0100000000001013 },
         };
 
+        internal static AppletId GetAppletIdFromProgramId(ulong programId)
+        {
+            foreach (var applet in _appletTitles)
+            {
+                if (applet.Value == programId)
+                {
+                    return applet.Key;
+                }
+            }
+
+            return AppletId.Application;
+        }
+
+        internal static ulong GetProgramIdFromAppletId(AppletId appletId)
+        {
+            return _appletTitles[appletId];
+        }
+
+        private readonly object _lock = new();
+        public object Lock => _lock;
+
         private readonly Horizon _system;
-        public AppletId AppletId { get; private set; }
-        public ulong AppletResourceUserId { get; private set; }
-        public AppletSession NormalSession { get; private set; }
-        public AppletSession InteractiveSession { get; private set; }
-        public RealApplet CallerApplet = null;
-        public LinkedList<RealApplet> ChildApplets = new();
+        internal AppletId AppletId { get; private set; }
+        internal LibraryAppletMode LibraryAppletMode { get; private set; }
+        internal ulong AppletResourceUserId { get; private set; }
 
-        public AppletStateMgr AppletState { get; private set; }
+        internal AppletSession NormalSession { get; private set; }
+        internal AppletSession InteractiveSession { get; private set; }
+        internal RealApplet CallerApplet = null;
+        internal LinkedList<RealApplet> ChildApplets = new();
+        internal bool IsCompleted = false;
+
+        internal bool IsActivityRunnable = false;
+        internal bool IsInteractable = true;
+        internal bool WindowVisible = true;
+
+        internal AppletStateMgr AppletState { get; private set; }
         public event EventHandler AppletStateChanged;
-        public ResultCode TerminateResult = ResultCode.Success;
+        internal AppletProcessLaunchReason LaunchReason = default;
+        internal ResultCode TerminateResult = ResultCode.Success;
 
-        public ProcessResult Process;
-        public KProcess ProcessHandle;
+        internal KProcess ProcessHandle;
+        internal bool IsProcessRunning;
 
-        public RealApplet(AppletId appletId, Horizon system)
+        public RealApplet(ulong pid, bool isApplication, Horizon system)
         {
             _system = system;
-            AppletState = new AppletStateMgr(system);
-            AppletId = appletId;
+            AppletState = new AppletStateMgr(system, isApplication);
+            ProcessHandle = _system.KernelContext.Processes[pid];
+            AppletResourceUserId = ProcessHandle.Pid;
+            AppletId = GetAppletIdFromProgramId(ProcessHandle.TitleId);
+        }
+
+        public void RegisterChild(RealApplet applet)
+        {
+            if (applet == null)
+            {
+                return;
+            }
+
+            if (applet == this)
+            {
+                throw new InvalidOperationException("Cannot register self as child.");
+            }
+
+            lock (_lock)
+            {
+                ChildApplets.AddLast(applet);
+            }
         }
 
         public ResultCode Start(AppletSession normalSession, AppletSession interactiveSession)
         {
             NormalSession = normalSession;
             InteractiveSession = interactiveSession;
+            return ResultCode.Success;
+        }
 
-            string contentPath = _system.ContentManager.GetInstalledContentPath(_appletTitles[AppletId], StorageId.BuiltInSystem, NcaContentType.Program);
+        public ResultCode StartApplication()
+        {
+            NormalSession = new AppletSession();
+            InteractiveSession = new AppletSession();
 
-            if (contentPath.Length == 0)
-            {
-                return ResultCode.NotAllocated;
-            }
-
-            if (contentPath.StartsWith("@SystemContent"))
-            {
-                contentPath = VirtualFileSystem.SwitchPathToSystemPath(contentPath);
-            }
-
-            if (!_system.Device.Processes.LoadNca(contentPath, out Process))
-            {
-                return ResultCode.NotAllocated;
-            }
-
-            Process.RealAppletInstance = this;
-            ProcessHandle = _system.KernelContext.Processes[Process.ProcessId];
-            AppletResourceUserId = ProcessHandle.Pid;
+            // ProcessHandle = _system.KernelContext.Processes[pid];
+            // AppletResourceUserId = ProcessHandle.Pid;
 
             return ResultCode.Success;
         }
@@ -124,6 +160,63 @@ namespace Ryujinx.HLE.HOS.Applets
         public void InvokeAppletStateChanged()
         {
             AppletStateChanged?.Invoke(this, null);
+        }
+
+        internal void UpdateSuspensionStateLocked(bool forceMessage)
+        {
+            // Remove any forced resumption.
+            AppletState.RemoveForceResumeIfPossible();
+
+            // Check if we're runnable.
+            bool currActivityRunnable = AppletState.IsRunnable();
+            bool prevActivityRunnable = IsActivityRunnable;
+            bool wasChanged = currActivityRunnable != prevActivityRunnable;
+
+            if (wasChanged)
+            {
+                if (currActivityRunnable)
+                {
+                    ProcessHandle.SetActivity(false);
+                }
+                else
+                {
+                    ProcessHandle.SetActivity(true);
+                    AppletState.RequestResumeNotification();
+                }
+
+                IsActivityRunnable = currActivityRunnable;
+            }
+
+            if (AppletState.ForcedSuspend)
+            {
+                // TODO: why is this allowed?
+                return;
+            }
+
+            // Signal if the focus state was changed or the process state was changed.
+            if (AppletState.UpdateRequestedFocusState() || wasChanged || forceMessage)
+            {
+                AppletState.SignalEventIfNeeded();
+            }
+        }
+
+        internal void SetInteractibleLocked(bool interactible)
+        {
+            if (IsInteractable == interactible)
+            {
+                return;
+            }
+
+            IsInteractable = interactible;
+
+            // _hidRegistration.EnableAppletToGetInput(interactible && !lifecycle_manager.GetExitRequested());
+        }
+
+        internal void OnProcessTerminatedLocked()
+        {
+            IsProcessRunning = false;
+            ProcessHandle = null;
+            InvokeAppletStateChanged();
         }
     }
 }

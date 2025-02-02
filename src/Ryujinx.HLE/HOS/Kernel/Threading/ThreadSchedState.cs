@@ -20,4 +20,20 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         Running = 2,
         TerminationPending = 3,
     }
+
+    static class ThreadSchedStateExtensions
+    {
+        public static string StateString(this ThreadSchedState state)
+        {
+            var stateValue = state & ThreadSchedState.LowMask;
+            return (stateValue) switch
+            {
+                ThreadSchedState.None => "None",
+                ThreadSchedState.Paused => "Paused",
+                ThreadSchedState.Running => "Running",
+                ThreadSchedState.TerminationPending => "TerminationPending",
+                _ => ((int)stateValue).ToString(),
+            };
+        }
+    }
 }

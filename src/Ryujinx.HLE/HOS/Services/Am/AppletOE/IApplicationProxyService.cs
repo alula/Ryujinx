@@ -11,6 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
         // OpenApplicationProxy(u64, pid, handle<copy>) -> object<nn::am::service::IApplicationProxy>
         public ResultCode OpenApplicationProxy(ServiceCtx context)
         {
+            context.Device.System.WindowSystem.TrackProcess(context.Request.HandleDesc.PId, 0, true);
             MakeObject(context, new IApplicationProxy(context.Request.HandleDesc.PId));
 
             return ResultCode.Success;

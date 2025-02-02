@@ -33,8 +33,6 @@ namespace Ryujinx.HLE.Loaders.Processes
         public readonly bool DiskCacheEnabled;
         public readonly bool AllowCodeMemoryForJit;
 
-        internal RealApplet RealAppletInstance;
-
         public ProcessResult(
             MetaLoader metaLoader,
             BlitStruct<ApplicationControlProperty> applicationControlProperties,

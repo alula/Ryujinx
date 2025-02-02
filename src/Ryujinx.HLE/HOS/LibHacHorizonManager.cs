@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.HOS
         public HorizonClient PmClient { get; private set; }
         public HorizonClient SdbClient { get; private set; }
 
-        public ConcurrentDictionary<ProgramId, HorizonClient> ApplicationClients { get; } = new();
+        public ConcurrentDictionary<ulong, HorizonClient> ApplicationClients { get; } = new();
 
         private SharedRef<LibHacIReader> _arpIReader;
         internal LibHacIReader ArpIReader => _arpIReader.Get;
@@ -76,18 +76,33 @@ namespace Ryujinx.HLE.HOS
 #pragma warning restore IDE0055
         }
 
-        public void InitializeApplicationClient(ProgramId programId, in Npdm npdm)
+        public void InitializeApplicationClient(ulong pid, in Npdm npdm)
         {
+            if (ApplicationClients.ContainsKey(pid))
+            {
+                return;
+            }
+
+            var programId = npdm.Aci.ProgramId;
+
             // TODO: Use the actual storage ID instead of assuming it from program ID.
-            Logger.Info?.Print(LogClass.ServiceFs, $"InitializeApplicationClient({programId}) {npdm.FsAccessControlData.ToHexString()} {npdm.FsAccessControlDescriptor.ToHexString()}");
+            Logger.Info?.Print(LogClass.ServiceFs, $"InitializeApplicationClient(pid={pid}, programId={programId}) {npdm.FsAccessControlData.ToHexString()} {npdm.FsAccessControlDescriptor.ToHexString()}");
 
             if (programId.Value < 0x010000000000FFFF)
             {
-                ApplicationClients[programId] = PmClient;
+                ApplicationClients[pid] = Server.CreatePrivilegedHorizonClient();
             }
             else
             {
-                ApplicationClients[programId] = Server.CreateHorizonClient(new ProgramLocation(programId, StorageId.BuiltInUser), npdm.FsAccessControlData, npdm.FsAccessControlDescriptor);
+                ApplicationClients[pid] = Server.CreateHorizonClient(new ProgramLocation(programId, StorageId.BuiltInUser), npdm.FsAccessControlData, npdm.FsAccessControlDescriptor);
+            }
+        }
+
+        public void DisposeApplicationClient(ulong pid)
+        {
+            if (ApplicationClients.TryRemove(pid, out var client))
+            {
+                client.Dispose();
             }
         }
 

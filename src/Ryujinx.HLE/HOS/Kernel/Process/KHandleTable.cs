@@ -2,6 +2,7 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
 using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
@@ -247,6 +248,22 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             else
             {
                 return GetObject<KProcess>(handle);
+            }
+        }
+
+        public IEnumerable<T> GetObjects<T>() where T : KAutoObject
+        {
+            lock (_table)
+            {
+                for (int index = 0; index < _size; index++)
+                {
+                    KHandleEntry entry = _table[index];
+
+                    if (entry.Obj is T obj)
+                    {
+                        yield return obj;
+                    }
+                }
             }
         }
 

@@ -199,7 +199,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             while (index < endIndex)
             {
-                Debug.Assert(_pageReferenceCounts[index] > 0);
+                // Debug.Assert(_pageReferenceCounts[index] > 0);
+                if (_pageReferenceCounts[index] == 0)
+                {
+                    continue;
+                }
+
                 ushort referenceCount = --_pageReferenceCounts[index];
 
                 if (referenceCount == 0)

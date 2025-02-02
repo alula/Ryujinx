@@ -39,6 +39,7 @@
         <KeyBinding Gesture="Ctrl+Cmd+F" Command="{Binding ToggleFullscreen}" />
         <KeyBinding Gesture="F9" Command="{Binding ToggleDockMode}" />
         <KeyBinding Gesture="Escape" Command="{Binding ExitCurrentState}" />
+        <KeyBinding Gesture="Pause" Command="{Binding DumpProcessState}" />
     </Window.KeyBindings>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>

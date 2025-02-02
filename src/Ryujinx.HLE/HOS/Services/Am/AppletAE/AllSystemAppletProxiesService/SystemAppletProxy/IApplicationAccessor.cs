@@ -10,14 +10,16 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
     class IApplicationAccessor : IpcService
     {
         private readonly KernelContext _kernelContext;
+        private readonly ulong _callerPid;
         private readonly ulong _applicationId;
         private readonly string _contentPath;
 
         private readonly KEvent _stateChangedEvent;
         private int _stateChangedEventHandle;
 
-        public IApplicationAccessor(ulong applicationId, string contentPath, Horizon system)
+        public IApplicationAccessor(ulong pid, ulong applicationId, string contentPath, Horizon system)
         {
+            _callerPid = pid;
             _kernelContext = system.KernelContext;
             _applicationId = applicationId;
             _contentPath = contentPath;
@@ -51,8 +53,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             _stateChangedEvent.ReadableEvent.Signal();
 
             Logger.Debug?.Print(LogClass.ServiceAm, $"Application 0x{_applicationId:X} start requested.");
-            
-            context.Device.LoadNca(_contentPath);
+
+            context.Device.Processes.LoadNca(_contentPath, out var processResult);
+
+            var applet = context.Device.System.WindowSystem.TrackProcess(processResult.ProcessId, 0, false);
 
             return ResultCode.Success;
         }
@@ -63,6 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             // _stateChangedEvent.ReadableEvent.Signal();
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            context.Device.System.WindowSystem.RequestApplicationToGetForeground();
 
             return ResultCode.Success;
         }

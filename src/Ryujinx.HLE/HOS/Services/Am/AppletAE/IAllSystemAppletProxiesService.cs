@@ -9,9 +9,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
         public IAllSystemAppletProxiesService(ServiceCtx context) { }
 
         [CommandCmif(100)]
-        // OpenSystemAppletProxy(u64, pid, handle<copy>) -> object<nn::am::service::ISystemAppletProxy>
+        // OpenSystemAppletProxy(pid, handle<copy>) -> object<nn::am::service::ISystemAppletProxy>
         public ResultCode OpenSystemAppletProxy(ServiceCtx context)
         {
+            context.Device.System.WindowSystem.TrackProcess(context.Request.HandleDesc.PId, 0, false);
             MakeObject(context, new ISystemAppletProxy(context.Request.HandleDesc.PId));
 
             return ResultCode.Success;
@@ -19,27 +20,30 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
 
         [CommandCmif(200)]
         [CommandCmif(201)] // 3.0.0+
-        // OpenLibraryAppletProxy(u64, pid, handle<copy>) -> object<nn::am::service::ILibraryAppletProxy>
+        // OpenLibraryAppletProxy(pid, handle<copy>) -> object<nn::am::service::ILibraryAppletProxy>
         public ResultCode OpenLibraryAppletProxy(ServiceCtx context)
         {
-            MakeObject(context, new ILibraryAppletProxy(context.Request.HandleDesc.PId));
+            context.Device.System.WindowSystem.TrackProcess(context.Request.HandleDesc.PId, 0, false);
+            MakeObject(context, new ILibraryAppletProxy(context, context.Request.HandleDesc.PId));
 
             return ResultCode.Success;
         }
 
         [CommandCmif(300)]
-        // OpenOverlayAppletProxy(u64, pid, handle<copy>) -> object<nn::am::service::IOverlayAppletProxy>
+        // OpenOverlayAppletProxy(pid, handle<copy>) -> object<nn::am::service::IOverlayAppletProxy>
         public ResultCode OpenOverlayAppletProxy(ServiceCtx context)
         {
+            context.Device.System.WindowSystem.TrackProcess(context.Request.HandleDesc.PId, 0, false);
             MakeObject(context, new IOverlayAppletProxy(context.Request.HandleDesc.PId));
 
             return ResultCode.Success;
         }
 
         [CommandCmif(350)]
-        // OpenApplicationProxy(u64, pid, handle<copy>) -> object<nn::am::service::IApplicationProxy>
-        public ResultCode OpenApplicationProxy(ServiceCtx context)
+        // OpenSystemApplicationProxy(pid, handle<copy>) -> object<nn::am::service::IApplicationProxy>
+        public ResultCode OpenSystemApplicationProxy(ServiceCtx context)
         {
+            context.Device.System.WindowSystem.TrackProcess(context.Request.HandleDesc.PId, 0, false);
             MakeObject(context, new IApplicationProxy(context.Request.HandleDesc.PId));
 
             return ResultCode.Success;

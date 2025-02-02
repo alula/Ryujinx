@@ -4,11 +4,11 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.PreciseSleep;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
+using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private readonly object _lock = new();
 
-        public long RenderLayerId { get; private set; }
+        // public long RenderLayerId { get; private set; }
 
         private class Layer
         {
@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             _device = device;
             _layers = new Dictionary<long, Layer>();
-            RenderLayerId = 0;
+            // RenderLayerId = 0;
 
             _composerThread = new Thread(HandleComposition)
             {
@@ -239,18 +239,19 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         private void CloseLayer(long layerId, Layer layer)
         {
             // If the layer was removed and the current in use, we need to change the current layer in use.
-            if (RenderLayerId == layerId)
-            {
-                // If no layer is availaible, reset to default value.
-                if (_layers.Count == 0)
-                {
-                    SetRenderLayer(0);
-                }
-                else
-                {
-                    SetRenderLayer(_layers.Last().Key);
-                }
-            }
+            // if (RenderLayerId == layerId)
+            // {
+            //     // If no layer is availaible, reset to default value.
+            //     if (_layers.Count == 0)
+            //     {
+            //         SetRenderLayer(0);
+            //     }
+            //     else
+            //     {
+            //         SetRenderLayer(_layers.Last().Key);
+            //     }
+            // }
+            Logger.Info?.Print(LogClass.SurfaceFlinger, $"Closing layer {layerId}");
 
             if (layer.State == LayerState.ManagedOpened)
             {
@@ -258,13 +259,13 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
         }
 
-        public void SetRenderLayer(long layerId)
-        {
-            lock (_lock)
-            {
-                RenderLayerId = layerId;
-            }
-        }
+        // public void SetRenderLayer(long layerId)
+        // {
+        //     lock (_lock)
+        //     {
+        //         RenderLayerId = layerId;
+        //     }
+        // }
 
         private Layer GetLayerByIdLocked(long layerId)
         {
@@ -359,36 +360,53 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             lock (_lock)
             {
-                // TODO: support multilayers (& multidisplay ?)
-                if (RenderLayerId == 0)
+                // TODO: massive hack
+                foreach (var (layerId, layer) in _layers)
                 {
-                    return;
-                }
+                    if (layer.State == LayerState.NotInitialized || layer.State == LayerState.ManagedClosed)
+                        continue;
 
-                Layer layer = GetLayerByIdLocked(RenderLayerId);
-
-                Status acquireStatus = layer.Consumer.AcquireBuffer(out BufferItem item, 0);
-
-                if (acquireStatus == Status.Success)
-                {
-                    // If device vsync is disabled, reflect the change.
-                    if (!_device.EnableDeviceVsync)
+                    // cleanup layers of dead processes
+                    if (_device.System.KernelContext.Processes.TryGetValue(layer.Owner, out var process))
                     {
-                        if (_swapInterval != 0)
+                        if (process.State == ProcessState.Exiting || process.State == ProcessState.Exited)
                         {
-                            UpdateSwapInterval(0);
+                            HOSBinderDriverServer.UnregisterBinderObject(layer.ProducerBinderId);
+
+                            if (_layers.Remove(layerId))
+                            {
+                                CloseLayer(layerId, layer);
+                            }
+
+                            continue;
                         }
                     }
-                    else if (item.SwapInterval != _swapInterval)
-                    {
-                        UpdateSwapInterval(item.SwapInterval);
-                    }
 
-                    PostFrameBuffer(layer, item);
-                }
-                else if (acquireStatus != Status.NoBufferAvailaible && acquireStatus != Status.InvalidOperation)
-                {
-                    throw new InvalidOperationException();
+                    Status acquireStatus = layer.Consumer.AcquireBuffer(out BufferItem item, 0);
+
+                    if (acquireStatus == Status.Success)
+                    {
+                        // If device vsync is disabled, reflect the change.
+                        if (!_device.EnableDeviceVsync)
+                        {
+                            if (_swapInterval != 0)
+                            {
+                                UpdateSwapInterval(0);
+                            }
+                        }
+                        else if (item.SwapInterval != _swapInterval)
+                        {
+                            UpdateSwapInterval(item.SwapInterval);
+                        }
+
+                        PostFrameBuffer(layer, item);
+                    }
+                    else if (acquireStatus != Status.NoBufferAvailaible && acquireStatus != Status.InvalidOperation)
+                    {
+                        // throw new InvalidOperationException();
+                        Logger.Warning?.Print(LogClass.SurfaceFlinger, $"Failed to acquire buffer for layer {layerId} (status: {acquireStatus})");
+                        continue;
+                    }
                 }
             }
         }

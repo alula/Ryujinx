@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
 {
-    enum AppletId
+    public enum AppletId
     {
         Application = 0x01,
         OverlayDisplay = 0x02,

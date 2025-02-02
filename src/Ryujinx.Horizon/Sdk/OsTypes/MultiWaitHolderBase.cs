@@ -4,7 +4,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes
 {
     public class MultiWaitHolderBase
     {
-        internal MultiWaitImpl MultiWait;
+        public MultiWaitImpl MultiWait;
 
         public bool IsLinked => MultiWait != null;
 

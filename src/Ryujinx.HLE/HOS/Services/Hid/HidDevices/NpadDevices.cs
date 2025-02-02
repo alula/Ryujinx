@@ -237,14 +237,23 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 return;
             }
 
+            var SwapBGR = new Func<uint, uint>(color =>
+            {
+                uint r = color & 0xff;
+                uint g = (color >> 8) & 0xff;
+                uint b = (color >> 16) & 0xff;
+
+                return (r << 16) | (g << 8) | b;
+            });
+
             // TODO: Allow customizing colors at config
             controller.JoyAssignmentMode = NpadJoyAssignmentMode.Dual;
-            controller.FullKeyColor.FullKeyBody = (uint)NpadColor.BodyGray;
-            controller.FullKeyColor.FullKeyButtons = (uint)NpadColor.ButtonGray;
-            controller.JoyColor.LeftBody = (uint)NpadColor.BodyNeonBlue;
-            controller.JoyColor.LeftButtons = (uint)NpadColor.ButtonGray;
-            controller.JoyColor.RightBody = (uint)NpadColor.BodyNeonRed;
-            controller.JoyColor.RightButtons = (uint)NpadColor.ButtonGray;
+            controller.FullKeyColor.FullKeyBody = SwapBGR((uint)NpadColor.BodyGray);
+            controller.FullKeyColor.FullKeyButtons = SwapBGR((uint)NpadColor.ButtonGray);
+            controller.JoyColor.LeftBody = SwapBGR((uint)NpadColor.BodyNeonBlue);
+            controller.JoyColor.LeftButtons = SwapBGR((uint)NpadColor.ButtonGray);
+            controller.JoyColor.RightBody = SwapBGR((uint)NpadColor.BodyNeonRed);
+            controller.JoyColor.RightButtons = SwapBGR((uint)NpadColor.ButtonGray);
 
             controller.SystemProperties = NpadSystemProperties.IsPoweredJoyDual |
                                           NpadSystemProperties.IsPoweredJoyLeft |
@@ -647,7 +656,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public NpadIdType GetLastActiveNpadId()
         {
-            return LastActiveNpad switch {
+            return LastActiveNpad switch
+            {
                 PlayerIndex.Player1 => NpadIdType.Player1,
                 PlayerIndex.Player2 => NpadIdType.Player2,
                 PlayerIndex.Player3 => NpadIdType.Player3,

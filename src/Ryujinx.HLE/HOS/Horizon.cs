@@ -6,6 +6,7 @@ using LibHac.FsSystem;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
@@ -59,7 +60,11 @@ namespace Ryujinx.HLE.HOS
 
         internal PerformanceState PerformanceState { get; private set; }
 
-        internal AppletStateMgr AppletState { get; private set; }
+        // internal AppletStateMgr AppletState { get; private set; }
+
+        internal WindowSystem WindowSystem { get; private set; }
+
+        internal EventObserver EventObserver { get; private set; }
 
         internal List<NfpDevice> NfpDevices { get; private set; }
 
@@ -176,9 +181,11 @@ namespace Ryujinx.HLE.HOS
 
             AppletCaptureBufferTransfer = new KTransferMemory(KernelContext, appletCaptureBufferStorage);
 
-            AppletState = new AppletStateMgr(this);
+            // AppletState = new AppletStateMgr(this);
+            WindowSystem = new WindowSystem(this);
+            EventObserver = new EventObserver(this, WindowSystem);
 
-            AppletState.SetFocus(true);
+            // AppletState.SetFocus(true);
 
             VsyncEvent = new KEvent(KernelContext);
 
@@ -246,7 +253,8 @@ namespace Ryujinx.HLE.HOS
         public void InitializeServices()
         {
             SmRegistry = new SmRegistry();
-            SmServer = new ServerBase(KernelContext, "SmServer", () => new IUserInterface(KernelContext, SmRegistry));
+            var ui = new IUserInterface(KernelContext, SmRegistry);
+            SmServer = new ServerBase(KernelContext, "SmServer", () => ui);
 
             // Wait until SM server thread is done with initialization,
             // only then doing connections to SM is safe.
@@ -322,9 +330,10 @@ namespace Ryujinx.HLE.HOS
                 State.DockedMode = newState;
                 PerformanceState.PerformanceMode = State.DockedMode ? PerformanceMode.Boost : PerformanceMode.Default;
 
-                AppletState.Messages.Enqueue(AppletMessage.OperationModeChanged);
-                AppletState.Messages.Enqueue(AppletMessage.PerformanceModeChanged);
-                AppletState.MessageEvent.ReadableEvent.Signal();
+                // AppletState.Messages.Enqueue(AppletMessage.OperationModeChanged);
+                // AppletState.Messages.Enqueue(AppletMessage.PerformanceModeChanged);
+                // AppletState.MessageEvent.ReadableEvent.Signal();
+                WindowSystem.OnOperationModeChanged();
 
                 SignalDisplayResolutionChange();
 
@@ -332,15 +341,10 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        public void ReturnFocus()
-        {
-            AppletState.SetFocus(true);
-        }
-
         public void SimulateWakeUpMessage()
         {
-            AppletState.Messages.Enqueue(AppletMessage.Resume);
-            AppletState.MessageEvent.ReadableEvent.Signal();
+            // AppletState.Messages.Enqueue(AppletMessage.Resume);
+            // AppletState.MessageEvent.ReadableEvent.Signal();
 
             // 0x534D4153 0x00000001 0x00000002 0x00000001
             PushToGeneralChannel(new byte[] {

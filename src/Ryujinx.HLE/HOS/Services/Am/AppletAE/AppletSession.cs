@@ -1,6 +1,4 @@
-﻿using LibHac.Util;
-using Ryujinx.Common.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
@@ -10,7 +8,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
         private readonly IAppletFifo<byte[]> _inputData;
         private readonly IAppletFifo<byte[]> _outputData;
 
-        public event EventHandler DataAvailable;
+        public event EventHandler InDataAvailable;
+        public event EventHandler OutDataAvailable;
 
         public int Length
         {
@@ -29,54 +28,88 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
             _inputData = inputData;
             _outputData = outputData;
 
-            _inputData.DataAvailable += OnDataAvailable;
+            _inputData.DataAvailable += OnInDataAvailable;
+            _outputData.DataAvailable += OnOutDataAvailable;
         }
 
-        private void OnDataAvailable(object sender, EventArgs e)
+        private void OnInDataAvailable(object sender, EventArgs e)
         {
-            DataAvailable?.Invoke(this, null);
+            InDataAvailable?.Invoke(this, null);
         }
 
-        public void Push(byte[] item)
+        private void OnOutDataAvailable(object sender, EventArgs e)
         {
-            if (!this.TryPush(item))
+            OutDataAvailable?.Invoke(this, null);
+        }
+
+        public void PushInData(byte[] item)
+        {
+            if (!this.TryPushInData(item))
             {
                 // TODO(jduncanator): Throw a proper exception
                 throw new InvalidOperationException();
             }
         }
 
-        public bool TryPush(byte[] item)
+        public bool TryPushInData(byte[] item)
+        {
+            return _inputData.TryAdd(item);
+        }
+
+        public void PushOutData(byte[] item)
+        {
+            if (!this.TryPushOutData(item))
+            {
+                // TODO(jduncanator): Throw a proper exception
+                throw new InvalidOperationException();
+            }
+        }
+
+        public bool TryPushOutData(byte[] item)
         {
             return _outputData.TryAdd(item);
         }
 
-        public byte[] Pop()
+        public byte[] PopInData()
         {
-            if (this.TryPop(out byte[] item))
+            if (this.TryPopInData(out byte[] item))
             {
-                Logger.Info?.Print(LogClass.ServiceAm, $"Pop applet session data: {item.ToHexString()}");
                 return item;
             }
 
             throw new InvalidOperationException("Input data empty.");
         }
 
-        public bool TryPop(out byte[] item)
+        public bool TryPopInData(out byte[] item)
         {
             return _inputData.TryTake(out item);
         }
 
-        public void InsertFront(byte[] item)
+        public byte[] PopOutData()
         {
-            if (!this.TryInsertFront(item))
+            if (this.TryPopOutData(out byte[] item))
+            {
+                return item;
+            }
+
+            throw new InvalidOperationException("Input data empty.");
+        }
+
+        public bool TryPopOutData(out byte[] item)
+        {
+            return _outputData.TryTake(out item);
+        }
+
+        public void InsertFrontInData(byte[] item)
+        {
+            if (!this.TryInsertFrontInData(item))
             {
                 // TODO: Throw a proper exception
                 throw new InvalidOperationException();
             }
         }
 
-        public bool TryInsertFront(byte[] item)
+        public bool TryInsertFrontInData(byte[] item)
         {
             List<byte[]> items = new List<byte[]>();
             while (_inputData.TryTake(out byte[] i))
@@ -92,17 +125,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// This returns an AppletSession that can be used at the
-        /// other end of the pipe. Pushing data into this new session
-        /// will put it in the first session's input buffer, and vice
-        /// versa.
-        /// </summary>
-        public AppletSession GetConsumer()
-        {
-            return new AppletSession(this._outputData, this._inputData);
         }
     }
 }

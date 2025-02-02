@@ -172,6 +172,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         private KSessionRequest _activeRequest;
 
+        internal KSession Parent => _parent;
+
         public KServerSession(KernelContext context, KSession parent) : base(context)
         {
             _parent = parent;

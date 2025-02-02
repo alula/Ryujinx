@@ -249,7 +249,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 return result;
             }
 
-            context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
+            // context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
 
             using Parcel parcel = new(0x28, 0x4);
 
@@ -287,7 +287,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             // TODO: support multi display.
             IBinder producer = context.Device.System.SurfaceFlinger.CreateLayer(out long layerId, 0, LayerState.Stray);
 
-            context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
+            // context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
 
             using Parcel parcel = new(0x28, 0x4);
 
@@ -382,6 +382,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             long layerWidth = context.RequestData.ReadInt64();
             long layerHeight = context.RequestData.ReadInt64();
             long layerHandle = context.RequestData.ReadInt64();
+            ulong aruid = context.RequestData.ReadUInt64();
             ulong layerBuffPosition = context.Request.ReceiveBuff[0].Position;
             ulong layerBuffSize = context.Request.ReceiveBuff[0].Size;
 
@@ -393,7 +394,8 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             RenderingSurfaceInfo surfaceInfo = new(ColorFormat.A8B8G8R8, (uint)layerWidth, (uint)layerHeight, (uint)pitch, (uint)layerBuffSize);
 
             // Get the applet associated with the handle.
-            object appletObject = context.Device.System.AppletState.IndirectLayerHandles.GetData((int)layerHandle);
+            var applet = context.Device.System.WindowSystem.GetByAruId(aruid);
+            object appletObject = applet?.AppletState.IndirectLayerHandles.GetData((int)layerHandle);
 
             if (appletObject == null)
             {
@@ -402,16 +404,16 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 return ResultCode.Success;
             }
 
-            Debug.Assert(appletObject is IApplet);
+            // Debug.Assert(appletObject is IApplet);
 
-            IApplet applet = appletObject as IApplet;
+            // IApplet applet = appletObject as IApplet;
 
-            if (!applet.DrawTo(surfaceInfo, context.Memory, layerBuffPosition))
-            {
-                Logger.Warning?.Print(LogClass.ServiceVi, $"Applet did not draw on indirect layer handle {layerHandle}");
+            // if (!applet.DrawTo(surfaceInfo, context.Memory, layerBuffPosition))
+            // {
+            //     Logger.Warning?.Print(LogClass.ServiceVi, $"Applet did not draw on indirect layer handle {layerHandle}");
 
-                return ResultCode.Success;
-            }
+            //     return ResultCode.Success;
+            // }
 
             context.ResponseData.Write(layerWidth);
             context.ResponseData.Write(layerHeight);

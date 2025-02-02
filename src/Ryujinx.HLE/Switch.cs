@@ -8,6 +8,8 @@ using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Apm;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Sm;
@@ -16,6 +18,7 @@ using Ryujinx.HLE.UI;
 using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ryujinx.HLE
 {
@@ -236,6 +239,26 @@ namespace Ryujinx.HLE
         public bool IsAudioMuted()
         {
             return AudioDeviceDriver.Volume == 0;
+        }
+
+        public void DumpProcessExecutionState()
+        {
+            Logger.Info?.Print(LogClass.Application, "--- Process Execution State ---");
+            foreach (var process in System.KernelContext.Processes.Values)
+            {
+                Logger.Info?.Print(LogClass.Application, $"PID {process.Pid}: name='{process.Name}' programID={process.TitleId:X16} state={process.State}");
+
+                var ownThreads = process.HandleTable.GetObjects<KThread>().Where(thread => thread.Owner.Pid == process.Pid);
+
+                foreach (var thread in ownThreads)
+                {
+                    Logger.Info?.Print(LogClass.Application, $"  UID {thread.ThreadUid}: currCore={thread.CurrentCore} prio={thread.DynamicPriority} aff={thread.AffinityMask} waitingSync={thread.WaitingSync} syncCancelled={thread.SyncCancelled} schedFlags={thread.SchedFlags.StateString()}");
+                    thread.PrintGuestStackTrace();
+                    thread.PrintGuestRegisterPrintout();
+                }
+
+            }
+            Logger.Info?.Print(LogClass.Application, "------------------------------");
         }
 
         public void DisposeGpu()

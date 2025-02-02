@@ -11,6 +11,12 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     [Service("hid:sys")]
     class IHidSystemServer : IpcService
     {
+        private KEvent _deviceRegisteredEventForControllerSupport;
+        private int _deviceRegisteredEventForControllerSupportHandle;
+
+        private KEvent _connectionTriggerTimeoutEvent;
+        private int _connectionTriggerTimeoutEventHandle;
+
         private KEvent _joyDetachOnBluetoothOffEvent;
         private int _joyDetachOnBluetoothOffEventHandle;
 
@@ -28,6 +34,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public IHidSystemServer(ServiceCtx context)
         {
+            _deviceRegisteredEventForControllerSupport = new KEvent(context.Device.System.KernelContext);
+            _connectionTriggerTimeoutEvent = new KEvent(context.Device.System.KernelContext);
             _joyDetachOnBluetoothOffEvent = new KEvent(context.Device.System.KernelContext);
             _playReportControllerUsageUpdateEvent = new KEvent(context.Device.System.KernelContext);
             _playReportRegisteredDeviceUpdateEvent = new KEvent(context.Device.System.KernelContext);
@@ -147,9 +155,11 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         }
 
         [CommandCmif(307)]
-        // GetNpadSystemExtStyle() -> u64
+        // GetNpadSystemExtStyle(u32) -> (u64, u64)
         public ResultCode GetNpadSystemExtStyle(ServiceCtx context)
         {
+            context.RequestData.ReadUInt32();
+
             foreach (PlayerIndex playerIndex in context.Device.Hid.Npads.GetSupportedPlayers())
             {
                 if (HidUtils.GetNpadIdTypeFromIndex(playerIndex) > NpadIdType.Handheld)
@@ -158,7 +168,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 }
             }
 
-            context.ResponseData.Write((ulong)context.Device.Hid.Npads.SupportedStyleSets);
+            // todo: wrong
+            // context.ResponseData.Write((ulong)context.Device.Hid.Npads.SupportedStyleSets);
+            context.ResponseData.Write((ulong)AppletFooterUiType.JoyDual);
+            context.ResponseData.Write((ulong)0);
 
             return ResultCode.Success;
         }
@@ -239,6 +252,51 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
+        [CommandCmif(544)]
+        // AcquireConnectionTriggerTimeoutEvent() -> handle<copy>
+        public ResultCode AcquireConnectionTriggerTimeoutEvent(ServiceCtx context)
+        {
+            if (_connectionTriggerTimeoutEventHandle == 0)
+            {
+                if (context.Process.HandleTable.GenerateHandle(_connectionTriggerTimeoutEvent.ReadableEvent,
+                    out _connectionTriggerTimeoutEventHandle) != Result.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_connectionTriggerTimeoutEventHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(545)]
+        // SendConnectionTrigger(nn::bluetooth::Address)
+        public ResultCode SendConnectionTrigger(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(546)]
+        // AcquireDeviceRegisteredEventForControllerSupport() -> handle<copy>
+        public ResultCode AcquireDeviceRegisteredEventForControllerSupport(ServiceCtx context)
+        {
+            if (_deviceRegisteredEventForControllerSupportHandle == 0)
+            {
+                if (context.Process.HandleTable.GenerateHandle(_deviceRegisteredEventForControllerSupport.ReadableEvent,
+                    out _deviceRegisteredEventForControllerSupportHandle) != Result.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_deviceRegisteredEventForControllerSupportHandle);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(703)]
         // GetUniquePadIds() -> (u64, buffer<nn::hid::system::UniquePadId[], 0xa>)
         public ResultCode GetUniquePadIds(ServiceCtx context)
@@ -256,7 +314,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             if (_joyDetachOnBluetoothOffEventHandle == 0)
             {
-                if (context.Process.HandleTable.GenerateHandle(_joyDetachOnBluetoothOffEvent.ReadableEvent, out _joyDetachOnBluetoothOffEventHandle) != Result.Success)
+                if (context.Process.HandleTable.GenerateHandle(_joyDetachOnBluetoothOffEvent.ReadableEvent,
+                    out _joyDetachOnBluetoothOffEventHandle) != Result.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }

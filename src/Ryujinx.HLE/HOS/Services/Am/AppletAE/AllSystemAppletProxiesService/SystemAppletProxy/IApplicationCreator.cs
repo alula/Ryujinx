@@ -6,7 +6,12 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 {
     class IApplicationCreator : IpcService
     {
-        public IApplicationCreator() { }
+        private readonly ulong _pid;
+
+        public IApplicationCreator(ulong pid)
+        {
+            _pid = pid;
+        }
 
         [CommandCmif(10)]
         // CreateSystemApplication(nn::ncm::SystemApplicationId) -> object<nn::am::service::IApplicationAccessor>
@@ -26,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
                 contentPath = VirtualFileSystem.SwitchPathToSystemPath(contentPath);
             }
 
-            MakeObject(context, new IApplicationAccessor(applicationId, contentPath, context.Device.System));
+            MakeObject(context, new IApplicationAccessor(_pid, applicationId, contentPath, context.Device.System));
 
             return ResultCode.Success;
         }

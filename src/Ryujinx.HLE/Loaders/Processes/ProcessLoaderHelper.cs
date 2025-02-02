@@ -309,8 +309,6 @@ namespace Ryujinx.HLE.Loaders.Processes
                 0,
                 personalMmHeapPagesCount);
 
-            context.Device.System.LibHacHorizonManager.InitializeApplicationClient(new ProgramId(programId), in npdm);
-
             Result result;
 
             KResourceLimit resourceLimit = new(context);
@@ -407,6 +405,8 @@ namespace Ryujinx.HLE.Loaders.Processes
             process.DefaultCpuCore = meta.DefaultCpuId;
 
             context.Processes.TryAdd(process.Pid, process);
+
+            context.Device.System.LibHacHorizonManager.InitializeApplicationClient(process.Pid, in npdm);
 
             // Keep the build ids because the tamper machine uses them to know which process to associate a
             // tamper to and also keep the starting address of each executable inside a process because some

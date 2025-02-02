@@ -26,11 +26,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs
     class IFileSystemProxy : DisposableIpcService
     {
         private Switch _device;
-        private SharedRef<LibHac.FsSrv.Sf.IFileSystemProxy> _baseFileSystemProxy {
-            get {
-                // var proc = _device.Processes.GetProcess(_pid);
-                var proc = _device.Processes.ActiveApplication;
-                var applicationClient = _device.System.LibHacHorizonManager.ApplicationClients[new ProgramId(proc.ProgramId)];
+        private SharedRef<LibHac.FsSrv.Sf.IFileSystemProxy> _baseFileSystemProxy
+        {
+            get
+            {
+                var applicationClient = _device.System.LibHacHorizonManager.ApplicationClients[_pid];
                 return applicationClient.Fs.Impl.GetFileSystemProxyServiceObject();
             }
         }
@@ -1452,9 +1452,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         protected override void Dispose(bool isDisposing)
         {
+            Logger.Info?.Print(LogClass.ServiceFs, "IFileSystemProxy disposed.");
             if (isDisposing)
             {
                 _baseFileSystemProxy.Destroy();
+                _device.System.LibHacHorizonManager.DisposeApplicationClient(_pid);
             }
         }
     }

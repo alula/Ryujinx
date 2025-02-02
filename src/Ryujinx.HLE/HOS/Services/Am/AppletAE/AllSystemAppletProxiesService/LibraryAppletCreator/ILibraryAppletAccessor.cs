@@ -1,3 +1,5 @@
+using LibHac.Ncm;
+using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Ipc;
@@ -11,8 +13,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
     class ILibraryAppletAccessor : DisposableIpcService
     {
         private readonly KernelContext _kernelContext;
+        private readonly ulong _callerPid;
 
-        private readonly IApplet _applet;
+        private readonly AppletId _appletId;
+        private RealApplet _applet;
 
         private readonly AppletSession _normalSession;
         private readonly AppletSession _interactiveSession;
@@ -27,7 +31,37 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         private int _indirectLayerHandle;
 
-        public ILibraryAppletAccessor(AppletId appletId, Horizon system)
+        private ResultCode StartAppletProcess(Horizon system)
+        {
+            // TODO: use ns
+            var programId = RealApplet.GetProgramIdFromAppletId(_appletId);
+
+            string contentPath = system.ContentManager.GetInstalledContentPath(programId, StorageId.BuiltInSystem, NcaContentType.Program);
+
+            if (contentPath.Length == 0)
+            {
+                return ResultCode.AppletLaunchFailed;
+            }
+
+            if (contentPath.StartsWith("@SystemContent"))
+            {
+                contentPath = FileSystem.VirtualFileSystem.SwitchPathToSystemPath(contentPath);
+            }
+
+            if (!system.Device.Processes.LoadNca(contentPath, out var Process))
+            {
+                return ResultCode.AppletLaunchFailed;
+            }
+
+            _applet = system.WindowSystem.TrackProcess(Process.ProcessId, _callerPid, false);
+            _applet.AppletStateChanged += OnAppletStateChanged;
+
+            _applet.AppletState.LaunchableEvent.ReadableEvent.Signal();
+
+            return ResultCode.Success;
+        }
+
+        public ILibraryAppletAccessor(AppletId appletId, Horizon system, ulong callerPid)
         {
             _kernelContext = system.KernelContext;
 
@@ -35,16 +69,14 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             _normalOutDataEvent = new KEvent(system.KernelContext);
             _interactiveOutDataEvent = new KEvent(system.KernelContext);
 
-            _applet = AppletManager.Create(appletId, system);
+            _callerPid = callerPid;
+            _appletId = appletId;
 
             _normalSession = new AppletSession();
             _interactiveSession = new AppletSession();
 
-            _applet.AppletStateChanged += OnAppletStateChanged;
-            _normalSession.DataAvailable += OnNormalOutData;
-            _interactiveSession.DataAvailable += OnInteractiveOutData;
-
-            Logger.Info?.Print(LogClass.ServiceAm, $"Applet '{appletId}' created.");
+            _normalSession.OutDataAvailable += OnNormalOutData;
+            _interactiveSession.OutDataAvailable += OnInteractiveOutData;
         }
 
         private void OnAppletStateChanged(object sender, EventArgs e)
@@ -83,17 +115,31 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // Start()
         public ResultCode Start(ServiceCtx context)
         {
-            return (ResultCode)_applet.Start(_normalSession.GetConsumer(), _interactiveSession.GetConsumer());
+            var result = StartAppletProcess(context.Device.System);
+            if (result != ResultCode.Success)
+            {
+                return result;
+            }
+
+            return (ResultCode)_applet.Start(_normalSession, _interactiveSession);
         }
 
         [CommandCmif(20)]
         // RequestExit()
         public ResultCode RequestExit(ServiceCtx context)
         {
-            // TODO: Since we don't support software Applet for now, we can just signals the changed state of the applet.
-            _stateChangedEvent.ReadableEvent.Signal();
+            _applet.AppletState.OnExitRequested();
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(25)]
+        // Terminate()
+        public ResultCode Terminate(ServiceCtx context)
+        {
+            _applet?.ProcessHandle.Terminate();
 
             return ResultCode.Success;
         }
@@ -102,6 +148,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // GetResult()
         public ResultCode GetResult(ServiceCtx context)
         {
+            if (_applet == null)
+            {
+                return ResultCode.LibraryAppletTerminated;
+            }
+
             return (ResultCode)_applet.GetResult();
         }
 
@@ -124,7 +175,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             IStorage data = GetObject<IStorage>(context, 0);
 
-            _normalSession.Push(data.Data);
+            _normalSession.PushInData(data.Data);
 
             return ResultCode.Success;
         }
@@ -133,7 +184,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopOutData() -> object<nn::am::service::IStorage>
         public ResultCode PopOutData(ServiceCtx context)
         {
-            if (_normalSession.TryPop(out byte[] data))
+            if (_normalSession.TryPopOutData(out byte[] data))
             {
                 MakeObject(context, new IStorage(data));
 
@@ -151,7 +202,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             IStorage data = GetObject<IStorage>(context, 0);
 
-            _interactiveSession.Push(data.Data);
+            _interactiveSession.PushInData(data.Data);
 
             return ResultCode.Success;
         }
@@ -160,7 +211,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopInteractiveOutData() -> object<nn::am::service::IStorage>
         public ResultCode PopInteractiveOutData(ServiceCtx context)
         {
-            if (_interactiveSession.TryPop(out byte[] data))
+            if (_interactiveSession.TryPopOutData(out byte[] data))
             {
                 MakeObject(context, new IStorage(data));
 
@@ -224,9 +275,12 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // GetIndirectLayerConsumerHandle() -> u64 indirect_layer_consumer_handle
         public ResultCode GetIndirectLayerConsumerHandle(ServiceCtx context)
         {
-            Horizon horizon = _kernelContext.Device.System;
+            if (_applet == null)
+            {
+                return ResultCode.LibraryAppletTerminated;
+            }
 
-            _indirectLayerHandle = horizon.AppletState.IndirectLayerHandles.Add(_applet);
+            _indirectLayerHandle = _applet.AppletState.IndirectLayerHandles.Add(_applet);
 
             context.ResponseData.Write((ulong)_indirectLayerHandle);
 
@@ -251,11 +305,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                 {
                     _kernelContext.Syscall.CloseHandle(_interactiveOutDataEventHandle);
                 }
+
+                _applet?.AppletState.IndirectLayerHandles.Delete(_indirectLayerHandle);
             }
-
-            Horizon horizon = _kernelContext.Device.System;
-
-            horizon.AppletState.IndirectLayerHandles.Delete(_indirectLayerHandle);
         }
     }
 }

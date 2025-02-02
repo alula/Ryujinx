@@ -1,9 +1,9 @@
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    enum FocusState
+    enum FocusHandlingMode
     {
-        InFocus = 1,
-        OutOfFocus = 2,
-        Background = 3,
+        AlwaysSuspend = 0,
+        SuspendHomeSleep = 1,
+        NoSuspend = 2,
     }
 }

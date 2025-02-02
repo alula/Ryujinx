@@ -20,6 +20,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
         private static RyuLogger.Log? GetLog(AvaLogLevel level)
         {
+            return null;
             return level switch
             {
                 AvaLogLevel.Verbose => RyuLogger.Debug,

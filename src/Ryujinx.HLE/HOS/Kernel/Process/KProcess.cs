@@ -9,6 +9,7 @@ using Ryujinx.Horizon.Common;
 using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -61,7 +62,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public KProcessCapabilities Capabilities { get; private set; }
 
         public bool AllowCodeMemoryForJit { get; private set; }
-
+ 
+        [DebuggerDisplay("{TitleId,h}")]
         public ulong TitleId { get; private set; }
         public bool IsApplication { get; private set; }
         public ulong Pid { get; private set; }
@@ -1174,6 +1176,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public bool IsSvcPermitted(int svcId)
         {
             return Capabilities.IsSvcPermitted(svcId);
+        }
+
+        public bool IsRunning()
+        {
+            return State == ProcessState.Started || State == ProcessState.Attached || State == ProcessState.DebugSuspended;
         }
     }
 }

@@ -1408,6 +1408,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public void DumpProcessState()
+        {
+            AppHost?.Device?.DumpProcessExecutionState();
+        }
+
         public static void ChangeLanguage(object languageCode)
         {
             LocaleManager.Instance.LoadLanguage((string)languageCode);
