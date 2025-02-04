@@ -313,8 +313,6 @@ namespace Ryujinx.Graphics.Gpu
             }
         }
 
-
-
         private void EnsureCaptureTexture()
         {
             if (_captureTexture == null)

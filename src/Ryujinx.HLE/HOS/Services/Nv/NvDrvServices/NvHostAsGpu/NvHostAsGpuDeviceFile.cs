@@ -244,7 +244,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
             }
 
-            NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, arguments.NvMapHandle);
+            NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(arguments.NvMapHandle);
 
             if (map == null)
             {
@@ -281,7 +281,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 {
                     if (_asContext.ValidateFixedBuffer(arguments.Offset, size, pageSize))
                     {
-                        _asContext.Gmm.Map(physicalAddress, arguments.Offset, size, (PteKind)arguments.Kind);
+                        Map(physicalAddress, arguments.Offset, size, (PteKind)arguments.Kind, map.OwnerPid);
                     }
                     else
                     {
@@ -300,7 +300,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                         _memoryAllocator.AllocateRange(va, size, freeAddressStartPosition);
                     }
 
-                    _asContext.Gmm.Map(physicalAddress, va, size, (PteKind)arguments.Kind);
+                    Map(physicalAddress, va, size, (PteKind)arguments.Kind, map.OwnerPid);
                     arguments.Offset = va;
                 }
 
@@ -379,7 +379,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     ulong mapOffs = (ulong)argument.MapOffset << 16;
                     PteKind kind = (PteKind)argument.Kind;
 
-                    NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, nvmapHandle);
+                    NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(nvmapHandle);
 
                     if (map == null)
                     {
@@ -388,11 +388,23 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                         return NvInternalResult.InvalidInput;
                     }
 
-                    gmm.Map(mapOffs + map.Address, gpuVa, size, kind);
+                    Map(mapOffs + map.Address, gpuVa, size, kind, map.OwnerPid);
                 }
             }
 
             return NvInternalResult.Success;
+        }
+
+        private void Map(ulong pa, ulong va, ulong size, PteKind kind, ulong ownerPid)
+        {
+            if (Owner == ownerPid)
+            {
+                _asContext.Gmm.Map(pa, va, size, kind);
+            }
+            else
+            {
+                _asContext.Gmm.MapForeign(pa, va, size, kind, ownerPid);
+            }
         }
 
         public override void Close() { }

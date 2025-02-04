@@ -371,7 +371,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.ComputeDraw
         {
             var memoryManager = _channel.MemoryManager;
 
-            BufferRange range = memoryManager.Physical.BufferCache.GetBufferRange(memoryManager.GetPhysicalRegions(address, size), BufferStage.VertexBuffer);
+            BufferRange range = memoryManager.GetBackingMemory(address).BufferCache.GetBufferRange(memoryManager.GetPhysicalRegions(address, size), BufferStage.VertexBuffer);
 
             ITexture bufferTexture = _vacContext.EnsureBufferTexture(index + 2, format);
             bufferTexture.SetStorage(range);
@@ -413,7 +413,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.ComputeDraw
             var memoryManager = _channel.MemoryManager;
 
             ulong misalign = address & ((ulong)_context.Capabilities.TextureBufferOffsetAlignment - 1);
-            BufferRange range = memoryManager.Physical.BufferCache.GetBufferRange(
+            BufferRange range = memoryManager.GetBackingMemory(address).BufferCache.GetBufferRange(
                 memoryManager.GetPhysicalRegions(address + indexOffset - misalign, size + misalign),
                 BufferStage.IndexBuffer);
             misalignedOffset = (int)misalign >> shift;

@@ -1,16 +1,18 @@
+using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
+using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Ryujinx.Memory
+namespace Ryujinx.Cpu
 {
     /// <summary>
     /// Represents a address space manager.
     /// Supports virtual memory region mapping, address translation and read/write access to mapped regions.
     /// </summary>
-    public sealed class AddressSpaceManager : VirtualMemoryManagerBase, IVirtualMemoryManager
+    public sealed class AddressSpaceManager : VirtualMemoryManagerBase, IVirtualMemoryManagerTracked
     {
         /// <inheritdoc/>
         public bool UsesPrivateAllocations => false;
@@ -22,6 +24,8 @@ namespace Ryujinx.Memory
 
         private readonly MemoryBlock _backingMemory;
         private readonly PageTable<nuint> _pageTable;
+        private readonly MemoryTracking _tracking;
+        private bool _writeTracked;
 
         protected override ulong AddressSpaceSize { get; }
 
@@ -45,6 +49,7 @@ namespace Ryujinx.Memory
             AddressSpaceSize = asSize;
             _backingMemory = backingMemory;
             _pageTable = new PageTable<nuint>();
+            _tracking = new MemoryTracking(this, 0x1000);
         }
 
         /// <inheritdoc/>
@@ -242,7 +247,7 @@ namespace Ryujinx.Memory
         /// <inheritdoc/>
         public void TrackingReprotect(ulong va, ulong size, MemoryPermission protection, bool guest = false)
         {
-            throw new NotImplementedException();
+            _writeTracked = true;
         }
 
         protected unsafe override Memory<byte> GetPhysicalAddressMemory(nuint pa, int size)
@@ -256,5 +261,32 @@ namespace Ryujinx.Memory
 
         protected override nuint TranslateVirtualAddressUnchecked(ulong va)
             => GetHostAddress(va);
+
+        /// <inheritdoc/>
+        public override void SignalMemoryTracking(ulong va, ulong size, bool write, bool precise = false, int? exemptId = null)
+        {
+            if (_writeTracked)
+            {
+                _tracking.VirtualMemoryEvent(va, size, write, precise);
+            }
+        }
+
+        /// <inheritdoc/>
+        public RegionHandle BeginTracking(ulong address, ulong size, int id, RegionFlags flags = RegionFlags.None)
+        {
+            return _tracking.BeginTracking(address, size, id, flags);
+        }
+
+        /// <inheritdoc/>
+        public MultiRegionHandle BeginGranularTracking(ulong address, ulong size, IEnumerable<IRegionHandle> handles, ulong granularity, int id, RegionFlags flags = RegionFlags.None)
+        {
+            return _tracking.BeginGranularTracking(address, size, handles, granularity, id, flags);
+        }
+
+        /// <inheritdoc/>
+        public SmartMultiRegionHandle BeginSmartGranularTracking(ulong address, ulong size, ulong granularity, int id)
+        {
+            return _tracking.BeginSmartGranularTracking(address, size, granularity, id);
+        }
     }
 }

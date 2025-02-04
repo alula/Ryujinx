@@ -272,8 +272,17 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             // NOTE: Service checks a private field and return an error if the SystemBufferSharing is disabled.
 
             // todo check if we're not an AppletId.Application   
+            return ResultCode.Success;
+        }
 
-            return ResultCode.NotImplemented;
+        [CommandCmif(42)] // 4.0.0+
+        // GetSystemSharedLayerHandle() -> (nn::vi::fbshare::SharedBufferHandle, nn::vi::fbshare::SharedLayerHandle)
+        public ResultCode GetSystemSharedLayerHandle(ServiceCtx context)
+        {
+            context.ResponseData.Write((ulong)context.Device.System.ViServerS.GetSharedBufferNvMapId());
+            context.ResponseData.Write(context.Device.System.ViServerS.GetSharedLayerId());
+
+            return ResultCode.Success;
         }
 
         [CommandCmif(44)] // 10.0.0+
@@ -282,7 +291,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             context.Device.System.SurfaceFlinger.CreateLayer(out long displayLayerId, _pid);
             context.Device.System.SurfaceFlinger.CreateLayer(out long recordingLayerId, _pid);
-            // context.Device.System.SurfaceFlinger.SetRenderLayer(displayLayerId);
 
             context.ResponseData.Write(displayLayerId);
             context.ResponseData.Write(recordingLayerId);

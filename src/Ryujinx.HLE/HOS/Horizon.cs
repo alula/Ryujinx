@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS
         internal ServerBase TimeServer { get; private set; }
         internal ServerBase ViServer { get; private set; }
         internal ServerBase ViServerM { get; private set; }
-        internal ServerBase ViServerS { get; private set; }
+        internal ViServer ViServerS { get; private set; }
         internal ServerBase LdnServer { get; private set; }
 
         internal KSharedMemory HidSharedMem { get; private set; }
@@ -118,9 +118,6 @@ namespace Ryujinx.HLE.HOS
         internal ServiceTable ServiceTable { get; private set; }
 
         public bool IsPaused { get; private set; }
-
-        internal IGraphicBufferProducer SharedLayer { get; set; }
-        internal long SharedLayerId;
 
         public Horizon(Switch device)
         {
@@ -267,7 +264,7 @@ namespace Ryujinx.HLE.HOS
             TimeServer = new ServerBase(KernelContext, "TimeServer");
             ViServer = new ServerBase(KernelContext, "ViServerU");
             ViServerM = new ServerBase(KernelContext, "ViServerM");
-            ViServerS = new ServerBase(KernelContext, "ViServerS");
+            ViServerS = new ViServer(KernelContext, "ViServerS");
             LdnServer = new ServerBase(KernelContext, "LdnServer");
 
             StartNewServices();

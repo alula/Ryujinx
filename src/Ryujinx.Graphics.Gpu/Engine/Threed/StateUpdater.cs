@@ -381,10 +381,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 {
                     BufferDescriptor sb = info.SBuffers[index];
 
-                    ulong sbDescAddress = _channel.BufferManager.GetGraphicsUniformBufferAddress(stage, sb.SbCbSlot);
+                    (var physical, ulong sbDescAddress) = _channel.BufferManager.GetGraphicsUniformBufferAddress(stage, sb.SbCbSlot);
                     sbDescAddress += (ulong)sb.SbCbOffset * 4;
 
-                    SbDescriptor sbDescriptor = _channel.MemoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
+                    SbDescriptor sbDescriptor = physical.Read<SbDescriptor>(sbDescAddress);
 
                     uint size;
                     if (sb.SbCbSlot == Constants.DriverReservedUniformBuffer)
@@ -505,14 +505,16 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     rtNoAlphaMask |= 1u << index;
                 }
 
-                Image.Texture color = memoryManager.Physical.TextureCache.FindOrCreateTexture(
-                    memoryManager,
-                    colorState,
-                    _vtgWritesRtLayer || layered,
-                    discard,
-                    samplesInX,
-                    samplesInY,
-                    sizeHint);
+                var colorTextureCache = memoryManager.GetBackingMemory(colorState.Address.Pack()).TextureCache;
+
+                Image.Texture color = colorTextureCache.FindOrCreateTexture(
+                                    memoryManager,
+                                    colorState,
+                                    _vtgWritesRtLayer || layered,
+                                    discard,
+                                    samplesInX,
+                                    samplesInY,
+                                    sizeHint);
 
                 changedScale |= _channel.TextureManager.SetRenderTargetColor(index, color);
 
@@ -544,7 +546,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 var dsState = _state.State.RtDepthStencilState;
                 var dsSize = _state.State.RtDepthStencilSize;
 
-                depthStencil = memoryManager.Physical.TextureCache.FindOrCreateTexture(
+                var dsTextureCache = memoryManager.GetBackingMemory(dsState.Address.Pack()).TextureCache;
+
+                depthStencil = dsTextureCache.FindOrCreateTexture(
                     memoryManager,
                     dsState,
                     dsSize,
@@ -1409,8 +1413,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateShaderState()
         {
-            var shaderCache = _channel.MemoryManager.Physical.ShaderCache;
-
             _vtgWritesRtLayer = false;
 
             ShaderAddresses addresses = new();
@@ -1432,6 +1434,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             int samplerPoolMaximumId = _state.State.SamplerIndex == SamplerIndex.ViaHeaderIndex
                 ? _state.State.TexturePoolState.MaximumId
                 : _state.State.SamplerPoolState.MaximumId;
+
+            // Shader stages on different address spaces are not supported right now,
+            // but it should never happen in practice anyway.
+            var shaderCache = _channel.MemoryManager.GetBackingMemory(addresses.VertexB).ShaderCache;
 
             CachedShaderProgram gs = shaderCache.GetGraphicsShader(
                 ref _state.State,

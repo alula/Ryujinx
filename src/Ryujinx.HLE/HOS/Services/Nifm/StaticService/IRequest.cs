@@ -163,5 +163,38 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
             return ResultCode.Success;
         }
+
+        [CommandCmif(23)]
+        // SetKeptInSleep(bool)
+        public ResultCode SetKeptInSleep(ServiceCtx context)
+        {
+            bool keptInSleep = context.RequestData.ReadBoolean();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm, new { keptInSleep });
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(24)]
+        // RegisterSocketDescriptor(s32)
+        public ResultCode RegisterSocketDescriptor(ServiceCtx context)
+        {
+            int socketDescriptor = context.RequestData.ReadInt32();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm, new { socketDescriptor });
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(25)]
+        // UnregisterSocketDescriptor(s32)
+        public ResultCode UnregisterSocketDescriptor(ServiceCtx context)
+        {
+            int socketDescriptor = context.RequestData.ReadInt32();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm, new { socketDescriptor });
+
+            return ResultCode.Success;
+        }
     }
 }

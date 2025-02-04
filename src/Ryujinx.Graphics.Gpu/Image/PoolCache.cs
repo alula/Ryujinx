@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Gpu.Memory;
 using System;
 using System.Collections.Generic;
 
@@ -60,11 +61,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Finds a cache texture pool, or creates a new one if not found.
         /// </summary>
         /// <param name="channel">GPU channel that the texture pool cache belongs to</param>
+        /// <param name="physicalMemory">Backing memory of the pool</param>
         /// <param name="address">Start address of the texture pool</param>
         /// <param name="maximumId">Maximum ID of the texture pool</param>
         /// <param name="bindingsArrayCache">Cache of texture array bindings</param>
         /// <returns>The found or newly created texture pool</returns>
-        public T FindOrCreate(GpuChannel channel, ulong address, int maximumId, TextureBindingsArrayCache bindingsArrayCache)
+        public T FindOrCreate(GpuChannel channel, PhysicalMemory physicalMemory, ulong address, int maximumId, TextureBindingsArrayCache bindingsArrayCache)
         {
             // Remove old entries from the cache, if possible.
             while (_pools.Count > MaxCapacity && (_currentTimestamp - _pools.First.Value.CacheTimestamp) >= MinDeltaForRemoval)
@@ -99,7 +101,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             // If not found, create a new one.
-            pool = CreatePool(_context, channel, address, maximumId);
+            pool = CreatePool(_context, channel, physicalMemory, address, maximumId);
 
             pool.CacheNode = _pools.AddLast(pool);
             pool.CacheTimestamp = _currentTimestamp;
@@ -112,9 +114,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="context">GPU context that the pool belongs to</param>
         /// <param name="channel">GPU channel that the pool belongs to</param>
+        /// <param name="physicalMemory">Backing memory of the pool</param>
         /// <param name="address">Address of the pool in guest memory</param>
         /// <param name="maximumId">Maximum ID of the pool (equal to maximum minus one)</param>
-        protected abstract T CreatePool(GpuContext context, GpuChannel channel, ulong address, int maximumId);
+        protected abstract T CreatePool(GpuContext context, GpuChannel channel, PhysicalMemory physical, ulong address, int maximumId);
 
         public void Dispose()
         {

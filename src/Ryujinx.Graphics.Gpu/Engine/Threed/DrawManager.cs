@@ -632,6 +632,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="engine">3D engine where this method is being called</param>
         /// <param name="topology">Primitive topology</param>
+        /// <param name="indirectBufferCache">Buffer cache owning the buffer with the draw parameters</param>
+        /// <param name="parameterBufferCache">Buffer cache owning the buffer with the draw count</param>
         /// <param name="indirectBufferRange">Memory range of the buffer with the draw parameters, such as count, first index, etc</param>
         /// <param name="parameterBufferRange">Memory range of the buffer with the draw count</param>
         /// <param name="maxDrawCount">Maximum number of draws that can be made</param>
@@ -641,6 +643,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public void DrawIndirect(
             ThreedClass engine,
             PrimitiveTopology topology,
+            BufferCache indirectBufferCache,
+            BufferCache parameterBufferCache,
             MultiRange indirectBufferRange,
             MultiRange parameterBufferRange,
             int maxDrawCount,
@@ -662,8 +666,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 return;
             }
 
-            PhysicalMemory memory = _channel.MemoryManager.Physical;
-
             bool hasCount = (drawType & IndirectDrawType.Count) != 0;
             bool indexed = (drawType & IndirectDrawType.Indexed) != 0;
 
@@ -684,8 +686,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             if (hasCount)
             {
-                var indirectBuffer = memory.BufferCache.GetBufferRange(indirectBufferRange, BufferStage.Indirect);
-                var parameterBuffer = memory.BufferCache.GetBufferRange(parameterBufferRange, BufferStage.Indirect);
+                var indirectBuffer = indirectBufferCache.GetBufferRange(indirectBufferRange, BufferStage.Indirect);
+                var parameterBuffer = parameterBufferCache.GetBufferRange(parameterBufferRange, BufferStage.Indirect);
 
                 if (indexed)
                 {
@@ -698,7 +700,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
             else
             {
-                var indirectBuffer = memory.BufferCache.GetBufferRange(indirectBufferRange, BufferStage.Indirect);
+                var indirectBuffer = indirectBufferCache.GetBufferRange(indirectBufferRange, BufferStage.Indirect);
 
                 if (indexed)
                 {
