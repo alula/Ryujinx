@@ -10,6 +10,7 @@ namespace Ryujinx.Input.HLE
         private readonly IMouse _mouse;
         private Switch _device;
         private bool _wasClicking;
+        private TouchPoint _previousPoint;
 
         public TouchScreenManager(IMouse mouse)
         {
@@ -29,7 +30,7 @@ namespace Ryujinx.Input.HLE
                 if (_wasClicking && !isClicking)
                 {
                     MouseStateSnapshot snapshot = IMouse.GetMouseStateSnapshot(_mouse);
-                    var touchPosition = IMouse.GetScreenPosition(snapshot.Position, _mouse.ClientSize, aspectRatio);
+                    var (touchPosition, _) = IMouse.GetScreenPosition(snapshot.Position, _mouse.ClientSize, aspectRatio);
 
                     TouchPoint currentPoint = new()
                     {
@@ -58,7 +59,12 @@ namespace Ryujinx.Input.HLE
             if (aspectRatio > 0)
             {
                 MouseStateSnapshot snapshot = IMouse.GetMouseStateSnapshot(_mouse);
-                var touchPosition = IMouse.GetScreenPosition(snapshot.Position, _mouse.ClientSize, aspectRatio);
+                var (touchPosition, inBounds) = IMouse.GetScreenPosition(snapshot.Position, _mouse.ClientSize, aspectRatio);
+
+                if (!inBounds)
+                {
+                    return false;
+                }
 
                 TouchAttribute attribute = TouchAttribute.None;
 
@@ -79,13 +85,14 @@ namespace Ryujinx.Input.HLE
                     Y = (uint)touchPosition.Y,
 
                     // Placeholder values till more data is acquired
-                    DiameterX = 10,
-                    DiameterY = 10,
-                    Angle = 90,
+                    DiameterX = 90,
+                    DiameterY = 90,
+                    Angle = 0,
                 };
 
                 _device.Hid.Touchscreen.Update(currentPoint);
 
+                _previousPoint = currentPoint;
                 _wasClicking = isClicking;
 
                 return true;

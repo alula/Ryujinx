@@ -61,7 +61,7 @@ namespace Ryujinx.Input
         /// <param name="clientSize">The size of the client</param>
         /// <param name="aspectRatio">The aspect ratio of the view</param>
         /// <returns>A snaphost of the state of the mouse.</returns>
-        public static Vector2 GetScreenPosition(Vector2 mousePosition, Size clientSize, float aspectRatio)
+        public static (Vector2 position, bool inBounds) GetScreenPosition(Vector2 mousePosition, Size clientSize, float aspectRatio)
         {
             float mouseX = mousePosition.X;
             float mouseY = mousePosition.Y;
@@ -97,10 +97,10 @@ namespace Ryujinx.Input
                 mouseX = (screenMouseX * (int)aspectWidth) / screenWidth;
                 mouseY = (screenMouseY * SwitchPanelHeight) / screenHeight;
 
-                return new Vector2(mouseX, mouseY);
+                return (new Vector2(mouseX, mouseY), true);
             }
 
-            return new Vector2();
+            return (new Vector2(), false);
         }
     }
 }

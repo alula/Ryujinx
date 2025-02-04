@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
                 for (int i = 0; i < pointsLength; ++i)
                 {
-                    TouchPoint pi = points[i];
+                    ref var pi = ref points[i];
                     newState.Touches[i] = new TouchState
                     {
                         DeltaTime = newState.SamplingNumber,
