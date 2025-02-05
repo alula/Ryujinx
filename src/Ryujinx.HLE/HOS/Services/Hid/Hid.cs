@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         internal ref SharedMemory SharedMemory => ref _storage.GetRef<SharedMemory>(0);
 
-        internal const int SharedMemEntryCount = 17;
+        internal const int SharedMemEntryCount = 16;
 
         public DebugPadDevice DebugPad;
         public TouchDevice Touchscreen;

@@ -37,6 +37,9 @@ namespace Ryujinx.Common.Configuration.Hid.Controller
         Guide,
         Misc1,
 
+        Home = Guide,
+        Capture = Misc1,
+
         // Xbox Elite paddle
         Paddle1,
         Paddle2,

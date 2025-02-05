@@ -1,6 +1,7 @@
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using Ryujinx.HLE.HOS.SystemState;
+using Ryujinx.Horizon.Sdk.Applet;
 using System;
 using System.Collections.Generic;
 
@@ -43,24 +44,36 @@ namespace Ryujinx.HLE.HOS.Applets
         // 0x37 	[17.0.0+] 0100000000001010 ([16.0.0-16.1.0] 0100000000001042) 	[17.0.0+] LibraryAppletLoginShare (loginShare) ([16.0.0-16.1.0] ) 
         private static readonly Dictionary<AppletId, ulong> _appletTitles = new Dictionary<AppletId, ulong>
         {
-            { AppletId.QLaunch,          0x0100000000001000 },
-            { AppletId.Auth,             0x0100000000001001 },
-            { AppletId.Cabinet,          0x0100000000001002 },
-            { AppletId.Controller,       0x0100000000001003 },
-            { AppletId.DataErase,        0x0100000000001004 },
-            { AppletId.Error,            0x0100000000001005 },
-            { AppletId.NetConnect,       0x0100000000001006 },
-            { AppletId.PlayerSelect,     0x0100000000001007 },
-            { AppletId.SoftwareKeyboard, 0x0100000000001008 },
-            { AppletId.MiiEdit,          0x0100000000001009 },
-            { AppletId.LibAppletWeb,     0x010000000000100A },
-            { AppletId.LibAppletShop,    0x010000000000100B },
-            { AppletId.OverlayDisplay,   0x010000000000100C },
-            { AppletId.PhotoViewer,      0x010000000000100D },
-            { AppletId.Settings,         0x010000000000100E },
-            { AppletId.LibAppletOff,     0x010000000000100F },
-            { AppletId.Starter,          0x0100000000001012 },
-            { AppletId.MyPage,           0x0100000000001013 },
+            { AppletId.SystemAppletMenu,            0x0100000000001000 },
+            { AppletId.LibraryAppletAuth,           0x0100000000001001 },
+            { AppletId.LibraryAppletCabinet,        0x0100000000001002 },
+            { AppletId.LibraryAppletController,     0x0100000000001003 },
+            { AppletId.LibraryAppletDataErase,      0x0100000000001004 },
+            { AppletId.LibraryAppletError,          0x0100000000001005 },
+            { AppletId.LibraryAppletNetConnect,     0x0100000000001006 },
+            { AppletId.LibraryAppletPlayerSelect,   0x0100000000001007 },
+            { AppletId.LibraryAppletSwkbd,          0x0100000000001008 },
+            { AppletId.LibraryAppletMiiEdit,        0x0100000000001009 },
+            { AppletId.LibraryAppletWeb,            0x010000000000100A },
+            { AppletId.LibraryAppletShop,           0x010000000000100B },
+            { AppletId.OverlayApplet,               0x010000000000100C },
+            { AppletId.LibraryAppletPhotoViewer,    0x010000000000100D },
+            { AppletId.LibraryAppletSet,            0x010000000000100E },
+            { AppletId.LibraryAppletOfflineWeb,     0x010000000000100F },
+            { AppletId.LibraryAppletLoginShare,     0x0100000000001010 },
+            { AppletId.LibraryAppletWifiWebAuth,    0x0100000000001011 },
+            { AppletId.SystemApplication,           0x0100000000001012 },
+            { AppletId.LibraryAppletMyPage,         0x0100000000001013 },
+            { AppletId.LibraryAppletGift,           0x010000000000101A },
+            { AppletId.LibraryAppletUserMigration,  0x010000000000101C },
+            { AppletId.LibraryAppletPreomiaSys,     0x010000000000101D },
+            { AppletId.LibraryAppletStory,          0x0100000000001020 },
+            { AppletId.LibraryAppletPreomiaUsr,     0x010070000E3C0000 },
+            { AppletId.LibraryAppletPreomiaUsrDummy,0x010086000E49C000 },
+            { AppletId.LibraryAppletSample,         0x0100000000001038 },
+            { AppletId.LibraryAppletPromoteQualification, 0x0100000000001007 },
+            { AppletId.LibraryAppletOfflineWebFw17,       0x0100000000001010 },
+            { AppletId.LibraryAppletOfflineWeb2Fw17,      0x0100000000001010 },
         };
 
         internal static AppletId GetAppletIdFromProgramId(ulong programId)
@@ -89,8 +102,11 @@ namespace Ryujinx.HLE.HOS.Applets
         internal LibraryAppletMode LibraryAppletMode { get; private set; }
         internal ulong AppletResourceUserId { get; private set; }
 
-        internal AppletSession NormalSession { get; private set; }
-        internal AppletSession InteractiveSession { get; private set; }
+        internal AppletChannel InChannel { get; private set; }
+        internal AppletChannel OutChannel { get; private set; }
+        internal AppletChannel InteractiveInChannel { get; private set; }
+        internal AppletChannel InteractiveOutChannel { get; private set; }
+        internal AppletChannel ContextChannel { get; private set; }
         internal RealApplet CallerApplet = null;
         internal LinkedList<RealApplet> ChildApplets = new();
         internal bool IsCompleted = false;
@@ -98,6 +114,7 @@ namespace Ryujinx.HLE.HOS.Applets
         internal bool IsActivityRunnable = false;
         internal bool IsInteractable = true;
         internal bool WindowVisible = true;
+        internal bool ExitLocked = false;
 
         internal AppletStateMgr AppletState { get; private set; }
         public event EventHandler AppletStateChanged;
@@ -134,17 +151,27 @@ namespace Ryujinx.HLE.HOS.Applets
             }
         }
 
-        public ResultCode Start(AppletSession normalSession, AppletSession interactiveSession)
+        public ResultCode Start(AppletChannel inChannel,
+                         AppletChannel outChannel,
+                         AppletChannel interactiveInChannel,
+                         AppletChannel interactiveOutChannel,
+                         AppletChannel contextChannel)
         {
-            NormalSession = normalSession;
-            InteractiveSession = interactiveSession;
+            InChannel = inChannel;
+            OutChannel = outChannel;
+            InteractiveInChannel = interactiveInChannel;
+            InteractiveOutChannel = interactiveOutChannel;
+            ContextChannel = contextChannel;
             return ResultCode.Success;
         }
 
         public ResultCode StartApplication()
         {
-            NormalSession = new AppletSession();
-            InteractiveSession = new AppletSession();
+            InChannel = new AppletChannel();
+            OutChannel = new AppletChannel();
+            InteractiveInChannel = new AppletChannel();
+            InteractiveOutChannel = new AppletChannel();
+            ContextChannel = new AppletChannel();
 
             // ProcessHandle = _system.KernelContext.Processes[pid];
             // AppletResourceUserId = ProcessHandle.Pid;

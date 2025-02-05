@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
 {
     struct RingLifo<T> where T : unmanaged, ISampledDataStruct
     {
-        private const ulong MaxEntries = 17;
+        private const ulong MaxEntries = 16;
 
 #pragma warning disable IDE0051, CS0169 // Remove unused private member
         private readonly ulong _unused;

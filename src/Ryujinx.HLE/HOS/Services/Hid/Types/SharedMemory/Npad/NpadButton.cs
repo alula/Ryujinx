@@ -35,10 +35,11 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Npad
         RightSL = 1 << 26,
         RightSR = 1 << 27,
         Palma = 1 << 28,
-
-        // FIXME: Probably a button on Lark.
-        Unknown29 = 1 << 29,
-
+        Verification = 1 << 29,
         HandheldLeftB = 1 << 30,
+        LeftC = 1UL << 31,
+        UpC = 1UL << 32,
+        RightC = 1UL << 33,
+        DownC = 1UL << 34,
     }
 }

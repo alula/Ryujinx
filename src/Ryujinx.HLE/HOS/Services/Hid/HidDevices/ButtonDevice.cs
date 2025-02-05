@@ -16,6 +16,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     {
         private ButtonDeviceType _type;
         private KEvent _event;
+        private bool isDown;
+
 
         public ButtonDevice(Switch device, bool active, ButtonDeviceType type) : base(device, active)
         {
@@ -36,9 +38,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     return ref _device.Hid.SharedMemory.HomeButton;
                 case ButtonDeviceType.SleepButton:
                     return ref _device.Hid.SharedMemory.SleepButton;
-                // case ButtonDeviceType.CaptureButton:
-                default:
+                case ButtonDeviceType.CaptureButton:
                     return ref _device.Hid.SharedMemory.CaptureButton;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(_type));
             }
         }
 
@@ -50,6 +53,14 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             {
                 lifo.Clear();
 
+                return;
+            }
+
+            bool shouldSignal = state != isDown;
+            isDown = state;
+
+            if (!shouldSignal)
+            {
                 return;
             }
 

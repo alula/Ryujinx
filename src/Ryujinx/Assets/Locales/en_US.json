@@ -259,6 +259,8 @@
   "ControllerSettingsLeftSR": "SR",
   "ControllerSettingsRightSL": "SL",
   "ControllerSettingsRightSR": "SR",
+  "ControllerSettingsButtonCapture": "Capture",
+  "ControllerSettingsButtonHome": "Home",
   "ControllerSettingsExtraButtonsLeft": "Buttons Left",
   "ControllerSettingsExtraButtonsRight": "Buttons Right",
   "ControllerSettingsMisc": "Miscellaneous",

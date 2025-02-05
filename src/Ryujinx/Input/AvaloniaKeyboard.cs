@@ -132,7 +132,7 @@ namespace Ryujinx.Ava.Input
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.LeftTrigger,         (Key)_configuration.LeftJoycon.ButtonZl));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleRightTrigger0, (Key)_configuration.LeftJoycon.ButtonSr));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger0,  (Key)_configuration.LeftJoycon.ButtonSl));
-                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.Misc1,               (Key)_configuration.LeftJoycon.ButtonCapture));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.Capture,             (Key)_configuration.LeftJoycon.ButtonCapture));
 
                 // Right JoyCon
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.RightStick,          (Key)_configuration.RightJoyconStick.StickButton));
@@ -145,7 +145,7 @@ namespace Ryujinx.Ava.Input
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.RightTrigger,        (Key)_configuration.RightJoycon.ButtonZr));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleRightTrigger1, (Key)_configuration.RightJoycon.ButtonSr));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger1,  (Key)_configuration.RightJoycon.ButtonSl));
-                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.Guide,               (Key)_configuration.RightJoycon.ButtonHome));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.Home,                (Key)_configuration.RightJoycon.ButtonHome));
 #pragma warning restore IDE0055
             }
         }

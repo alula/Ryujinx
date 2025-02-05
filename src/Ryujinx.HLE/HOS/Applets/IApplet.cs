@@ -10,8 +10,11 @@ namespace Ryujinx.HLE.HOS.Applets
     {
         event EventHandler AppletStateChanged;
 
-        ResultCode Start(AppletSession normalSession,
-                         AppletSession interactiveSession);
+        ResultCode Start(AppletChannel inChannel,
+                         AppletChannel outChannel,
+                         AppletChannel interactiveInChannel,
+                         AppletChannel interactiveOutChannel,
+                         AppletChannel contextChannel);
 
         ResultCode GetResult();
 

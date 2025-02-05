@@ -1,3 +1,4 @@
+using LibHac.Common;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
@@ -901,7 +902,7 @@ namespace Ryujinx.UI.Common.Configuration
                         ButtonZl = Key.Q,
                         ButtonSl = Key.Unbound,
                         ButtonSr = Key.Unbound,
-                        ButtonCapture = Key.F12,
+                        ButtonCapture = Key.G,
                     },
                     LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
                     {
@@ -922,7 +923,7 @@ namespace Ryujinx.UI.Common.Configuration
                         ButtonZr = Key.O,
                         ButtonSl = Key.Unbound,
                         ButtonSr = Key.Unbound,
-                        ButtonHome = Key.F11,
+                        ButtonHome = Key.B,
                     },
                     RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                     {
@@ -949,7 +950,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 2)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 2.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 2);
 
                 configurationFileFormat.SystemRegion = Region.USA;
 
@@ -958,7 +959,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 3)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 3.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 3);
 
                 configurationFileFormat.SystemTimeZone = "UTC";
 
@@ -967,7 +968,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 4)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 4.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 4);
 
                 configurationFileFormat.MaxAnisotropy = -1;
 
@@ -976,7 +977,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 5)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 5.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 5);
 
                 configurationFileFormat.SystemTimeOffset = 0;
 
@@ -985,7 +986,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 8)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 8.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 8);
 
                 configurationFileFormat.EnablePtc = true;
 
@@ -994,7 +995,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 9)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 9.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 9);
 
                 configurationFileFormat.ColumnSort = new ColumnSort
                 {
@@ -1012,7 +1013,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 10)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 10.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 10);
 
                 configurationFileFormat.AudioBackend = AudioBackend.OpenAl;
 
@@ -1021,7 +1022,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 11)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 11.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 11);
 
                 configurationFileFormat.ResScale = 1;
                 configurationFileFormat.ResScaleCustom = 1.0f;
@@ -1031,7 +1032,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 12)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 12.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 12);
 
                 configurationFileFormat.LoggingGraphicsDebugLevel = GraphicsDebugLevel.None;
 
@@ -1042,7 +1043,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 14)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 14.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 14);
 
                 configurationFileFormat.CheckUpdatesOnStart = true;
 
@@ -1051,7 +1052,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 16)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 16.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 16);
 
                 configurationFileFormat.EnableShaderCache = true;
 
@@ -1060,7 +1061,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 17)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 17.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 17);
 
                 configurationFileFormat.StartFullscreen = false;
 
@@ -1069,7 +1070,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 18)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 18.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 18);
 
                 configurationFileFormat.AspectRatio = AspectRatio.Fixed16x9;
 
@@ -1080,7 +1081,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 20)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 20.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 20);
 
                 configurationFileFormat.ShowConfirmExit = true;
 
@@ -1089,7 +1090,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 21)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 21.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 21);
 
                 // Initialize network config.
 
@@ -1101,7 +1102,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 22)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 22.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 22);
 
                 configurationFileFormat.HideCursor = HideCursorMode.Never;
 
@@ -1110,7 +1111,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 24)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 24.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 24);
 
                 configurationFileFormat.InputConfig = new List<InputConfig>
                 {
@@ -1132,7 +1133,7 @@ namespace Ryujinx.UI.Common.Configuration
                             ButtonZl = Key.Q,
                             ButtonSl = Key.Unbound,
                             ButtonSr = Key.Unbound,
-                            ButtonCapture = Key.F12,
+                            ButtonCapture = Key.G,
                         },
                         LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
                         {
@@ -1153,7 +1154,7 @@ namespace Ryujinx.UI.Common.Configuration
                             ButtonZr = Key.O,
                             ButtonSl = Key.Unbound,
                             ButtonSr = Key.Unbound,
-                            ButtonHome = Key.F11,
+                            ButtonHome = Key.B,
                         },
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                         {
@@ -1171,14 +1172,14 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 25)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 25.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 25);
 
                 configurationFileUpdated = true;
             }
 
             if (configurationFileFormat.Version < 26)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 26.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 26);
 
                 configurationFileFormat.MemoryManagerMode = MemoryManagerMode.HostMappedUnsafe;
 
@@ -1187,7 +1188,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 27)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 27.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 27);
 
                 configurationFileFormat.EnableMouse = false;
 
@@ -1196,7 +1197,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 28)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 28.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 28);
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
@@ -1209,7 +1210,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 29)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 29.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 29);
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
@@ -1223,7 +1224,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 30)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 30.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 30);
 
                 foreach (InputConfig config in configurationFileFormat.InputConfig)
                 {
@@ -1243,7 +1244,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 31)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 31.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 31);
 
                 configurationFileFormat.BackendThreading = BackendThreading.Auto;
 
@@ -1252,7 +1253,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 32)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 32.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 32);
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
@@ -1267,7 +1268,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 33)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 33.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 33);
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
@@ -1285,7 +1286,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 34)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 34.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 34);
 
                 configurationFileFormat.EnableInternetAccess = false;
 
@@ -1294,7 +1295,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 35)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 35.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 35);
 
                 foreach (InputConfig config in configurationFileFormat.InputConfig)
                 {
@@ -1310,7 +1311,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 36)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 36.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 36);
 
                 configurationFileFormat.LoggingEnableTrace = false;
 
@@ -1319,7 +1320,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 37)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 37.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 37);
 
                 configurationFileFormat.ShowConsole = true;
 
@@ -1328,7 +1329,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 38)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 38.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 38);
 
                 configurationFileFormat.BaseStyle = "Dark";
                 configurationFileFormat.GameListViewMode = 0;
@@ -1341,7 +1342,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 39)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 39.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 39);
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
@@ -1359,7 +1360,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 40)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 40.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 40);
 
                 configurationFileFormat.GraphicsBackend = GraphicsBackend.OpenGl;
 
@@ -1368,7 +1369,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 41)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 41.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 41);
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
@@ -1386,21 +1387,21 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 42)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 42.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 42);
 
                 configurationFileFormat.EnableMacroHLE = true;
             }
 
             if (configurationFileFormat.Version < 43)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 43.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 43);
 
                 configurationFileFormat.UseHypervisor = true;
             }
 
             if (configurationFileFormat.Version < 44)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 44.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 44);
 
                 configurationFileFormat.AntiAliasing = AntiAliasing.None;
                 configurationFileFormat.ScalingFilter = ScalingFilter.Bilinear;
@@ -1411,7 +1412,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 45)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 45.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 45);
 
                 configurationFileFormat.ShownFileTypes = new ShownFileTypes
                 {
@@ -1428,7 +1429,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 46)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 46.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 46);
 
                 configurationFileFormat.MultiplayerLanInterfaceId = "0";
 
@@ -1437,7 +1438,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 47)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 47.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 47);
 
                 configurationFileFormat.WindowStartup = new WindowStartup
                 {
@@ -1453,7 +1454,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 48)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 48.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 48);
 
                 configurationFileFormat.EnableColorSpacePassthrough = false;
 
@@ -1462,13 +1463,13 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 49)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 49.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 49);
 
                 if (OperatingSystem.IsMacOS())
                 {
                     AppDataManager.FixMacOSConfigurationFolders();
                 }
-                
+
                 configurationFileFormat.EnableServiceLLE = false;
 
                 configurationFileUpdated = true;
@@ -1476,7 +1477,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 50)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 50.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 50);
 
                 configurationFileFormat.EnableHardwareAcceleration = true;
 
@@ -1485,11 +1486,16 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (configurationFileFormat.Version < 51)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 51.");
+                PrintUpdatedToVersionNotice(configurationFileFormat.Version, 51);
 
                 configurationFileFormat.RememberWindowState = true;
 
                 configurationFileUpdated = true;
+            }
+
+            foreach (var inputConfig in configurationFileFormat.InputConfig)
+            {
+                UpdateInputConfig(inputConfig, ref configurationFileUpdated);
             }
 
             Logger.EnableFileLog.Value = configurationFileFormat.EnableFileLog;
@@ -1595,6 +1601,36 @@ namespace Ryujinx.UI.Common.Configuration
 
                 Ryujinx.Common.Logging.Logger.Notice.Print(LogClass.Application, $"Configuration file updated to version {ConfigurationFileFormat.CurrentVersion}");
             }
+        }
+
+        private void UpdateInputConfig(InputConfig config, ref bool updated)
+        {
+            if (config.Version < 2)
+            {
+                config.Version = 2;
+                updated = true;
+
+                if (config is StandardKeyboardInputConfig keyboardConfig)
+                {
+                    keyboardConfig.LeftJoycon.ButtonCapture = Key.G;
+                    keyboardConfig.RightJoycon.ButtonHome = Key.B;
+                }
+                else if (config is StandardControllerInputConfig controllerConfig)
+                {
+                    controllerConfig.LeftJoycon.ButtonCapture = GamepadInputId.Capture;
+                    controllerConfig.RightJoycon.ButtonHome = GamepadInputId.Home;
+                }
+            }
+
+            if (updated)
+            {
+                Ryujinx.Common.Logging.Logger.Notice.Print(LogClass.Application, $"Input configuration updated to version {config.Version}");
+            }
+        }
+
+        private void PrintUpdatedToVersionNotice(int currentVersion, int newVersion)
+        {
+            Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {currentVersion}, migrating to version {newVersion}.");
         }
 
         private static GraphicsBackend DefaultGraphicsBackend()

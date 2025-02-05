@@ -1019,7 +1019,7 @@ namespace Ryujinx.UI.Windows
                             ButtonZl = Key.Q,
                             ButtonSl = Key.Unbound,
                             ButtonSr = Key.Unbound,
-                            ButtonCapture = Key.F12,
+                            ButtonCapture = Key.G,
                         },
 
                         LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
@@ -1042,7 +1042,7 @@ namespace Ryujinx.UI.Windows
                             ButtonZr = Key.O,
                             ButtonSl = Key.Unbound,
                             ButtonSr = Key.Unbound,
-                            ButtonHome = Key.F11,
+                            ButtonHome = Key.B,
                         },
 
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>
@@ -1081,7 +1081,7 @@ namespace Ryujinx.UI.Windows
                             ButtonZl = ConfigGamepadInputId.LeftTrigger,
                             ButtonSl = ConfigGamepadInputId.Unbound,
                             ButtonSr = ConfigGamepadInputId.Unbound,
-                            ButtonCapture = ConfigGamepadInputId.Misc1,
+                            ButtonCapture = ConfigGamepadInputId.Capture,
                         },
 
                         LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
@@ -1104,7 +1104,7 @@ namespace Ryujinx.UI.Windows
                             ButtonZr = ConfigGamepadInputId.RightTrigger,
                             ButtonSl = ConfigGamepadInputId.Unbound,
                             ButtonSr = ConfigGamepadInputId.Unbound,
-                            ButtonHome = ConfigGamepadInputId.Guide,
+                            ButtonHome = ConfigGamepadInputId.Home,
                         },
 
                         RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>

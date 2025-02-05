@@ -241,6 +241,11 @@ namespace Ryujinx.HLE
             return AudioDeviceDriver.Volume == 0;
         }
 
+        public void UpdateWindowSystemInput()
+        {
+            System.WindowSystem.ButtonPressTracker.Update();
+        }
+
         public void DumpProcessExecutionState()
         {
             Logger.Info?.Print(LogClass.Application, "--- Process Execution State ---");
