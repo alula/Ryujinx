@@ -4,6 +4,8 @@ using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 using System.Collections.Generic;
 using System.Linq;
+using Ryujinx.Horizon.Sdk.Applet;
+using Ryujinx.Common;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
@@ -30,6 +32,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         // Foreground roots
         RealApplet _homeMenu = null;
+        RealApplet _overlayDisp = null;
         RealApplet _application = null;
 
         // Home menu state
@@ -41,9 +44,12 @@ namespace Ryujinx.HLE.HOS.Applets
         Dictionary<ulong, RealApplet> _applets = new();
         List<RealApplet> _rootApplets = new();
 
+        internal ButtonPressTracker ButtonPressTracker { get; }
+
         public WindowSystem(Horizon system)
         {
             _system = system;
+            ButtonPressTracker = new ButtonPressTracker(system);
         }
 
         void Dispose()
@@ -59,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         internal void Update()
         {
-            // lock (_lock)
+            lock (_lock)
             {
                 PruneTerminatedAppletsLocked();
 
@@ -82,80 +88,90 @@ namespace Ryujinx.HLE.HOS.Applets
 
         internal RealApplet TrackProcess(ulong pid, ulong callerPid, bool isApplication)
         {
-            if (_applets.TryGetValue(pid, out var applet))
+            lock (_lock)
             {
-                Logger.Info?.Print(LogClass.ServiceAm, $"TrackProcess() called on existing applet {pid} - caller {callerPid}");
-                return applet;
-            }
-
-            Logger.Info?.Print(LogClass.ServiceAm, $"Tracking process {pid} as {(isApplication ? "application" : "applet")} - caller {callerPid}");
-            if (_system.KernelContext.Processes.TryGetValue(pid, out var _process))
-            {
-                applet = new RealApplet(pid, isApplication, _system);
-
-                if (callerPid == 0)
+                if (_applets.TryGetValue(pid, out var applet))
                 {
-                    _rootApplets.Add(applet);
-                }
-                else
-                {
-                    var callerApplet = _applets[callerPid];
-                    applet.CallerApplet = callerApplet;
-                    callerApplet.RegisterChild(applet);
+                    Logger.Info?.Print(LogClass.ServiceAm, $"TrackProcess() called on existing applet {pid} - caller {callerPid}");
+                    return applet;
                 }
 
-                TrackApplet(applet, isApplication);
-                return applet;
-            }
+                Logger.Info?.Print(LogClass.ServiceAm, $"Tracking process {pid} as {(isApplication ? "application" : "applet")} - caller {callerPid}");
+                if (_system.KernelContext.Processes.TryGetValue(pid, out var _process))
+                {
+                    applet = new RealApplet(pid, isApplication, _system);
 
-            return null;
+                    if (callerPid == 0)
+                    {
+                        _rootApplets.Add(applet);
+                    }
+                    else
+                    {
+                        var callerApplet = _applets[callerPid];
+                        applet.CallerApplet = callerApplet;
+                        callerApplet.RegisterChild(applet);
+                    }
+
+                    TrackApplet(applet, isApplication);
+                    return applet;
+                }
+
+                return null;
+            }
         }
 
-        internal void TrackApplet(RealApplet applet, bool isApplication)
+        private void TrackApplet(RealApplet applet, bool isApplication)
         {
             if (_applets.ContainsKey(applet.AppletResourceUserId))
             {
                 return;
             }
 
-            // lock (_lock)
+            if (applet.AppletId == AppletId.SystemAppletMenu)
             {
-                if (applet.AppletId == AppletId.QLaunch)
-                {
-                    _homeMenu = applet;
-                }
-                else if (isApplication)
-                {
-                    _application = applet;
-                }
-
-                _applets[applet.AppletResourceUserId] = applet;
-                _eventObserver.TrackAppletProcess(applet);
-
-                if (_applets.Count == 1)
-                {
-                    SetupFirstApplet(applet);
-                }
-
-                // _foregroundRequestedApplet = applet;
-                // applet.AppletState.SetFocusState(FocusState.InFocus);
+                _homeMenu = applet;
+                _foregroundRequestedApplet = applet;
             }
+            else if (applet.AppletId == AppletId.OverlayApplet)
+            {
+                _overlayDisp = applet;
+            }
+            else if (isApplication)
+            {
+                _application = applet;
+            }
+
+            _applets[applet.AppletResourceUserId] = applet;
+            _eventObserver.TrackAppletProcess(applet);
+
+            if (_applets.Count == 1 || applet.AppletId == AppletId.SystemAppletMenu || applet.AppletId == AppletId.OverlayApplet)
+            {
+                SetupFirstApplet(applet);
+            }
+
+            // _foregroundRequestedApplet = applet;
+            // applet.AppletState.SetFocusState(FocusState.InFocus);
 
             _eventObserver.RequestUpdate();
         }
 
         private void SetupFirstApplet(RealApplet applet)
         {
-            // applet.AppletState.SetFocusState(FocusState.InFocus);
-
-            if (applet.AppletId == AppletId.QLaunch)
+            if (applet.AppletId == AppletId.SystemAppletMenu)
             {
-                applet.AppletState.SetFocusHandlingMode(false);
+                //applet.AppletState.SetFocusHandlingMode(false);
                 applet.AppletState.SetOutOfFocusSuspendingEnabled(false);
                 RequestHomeMenuToGetForeground();
             }
+            else if (applet.AppletId == AppletId.OverlayApplet)
+            {
+                applet.AppletState.SetOutOfFocusSuspendingEnabled(false);
+                applet.AppletState.SetFocusState(FocusState.OutOfFocus);
+            }
             else
             {
+                applet.AppletState.SetFocusState(FocusState.InFocus);
+                _foregroundRequestedApplet = applet;
                 RequestApplicationToGetForeground();
             }
 
@@ -276,23 +292,34 @@ namespace Ryujinx.HLE.HOS.Applets
                 switch (type)
                 {
                     case SystemButtonType.PerformHomeButtonShortPressing:
+                        SendButtonAppletMessageLocked(AppletMessage.DetectShortPressingHomeButton);
+                        break;
                     case SystemButtonType.PerformHomeButtonLongPressing:
-                        HandleHomeButtonPress(type == SystemButtonType.PerformHomeButtonLongPressing);
+                        SendButtonAppletMessageLocked(AppletMessage.DetectLongPressingHomeButton);
+                        break;
+                    case SystemButtonType.PerformCaptureButtonShortPressing:
+                        SendButtonAppletMessageLocked(AppletMessage.DetectShortPressingCaptureButton);
                         break;
                 }
             }
         }
 
-        private void HandleHomeButtonPress(bool longPress)
+        private void SendButtonAppletMessageLocked(AppletMessage message)
         {
-            if (_homeMenu == null)
+            if (_homeMenu != null)
             {
-                return;
+                lock (_homeMenu.Lock)
+                {
+                    _homeMenu.AppletState.PushUnorderedMessage(message);
+                }
             }
 
-            lock (_homeMenu.Lock)
+            if (_overlayDisp != null)
             {
-                _homeMenu.AppletState.PushUnorderedMessage(longPress ? AppletMessage.DetectLongPressingHomeButton : AppletMessage.DetectShortPressingHomeButton);
+                lock (_overlayDisp.Lock)
+                {
+                    _overlayDisp.AppletState.PushUnorderedMessage(message);
+                }
             }
         }
 
@@ -440,6 +467,71 @@ namespace Ryujinx.HLE.HOS.Applets
                 {
                     UpdateAppletStateLocked(child, isForeground);
                 }
+            }
+        }
+    }
+
+    internal class ButtonPressTracker
+    {
+        private Horizon _system;
+        bool _homeButtonPressed = false;
+        long _homeButtonPressedTimeStart = 0;
+        bool _captureButtonPressed = false;
+        long _captureButtonPressedTime = 0;
+
+        public ButtonPressTracker(Horizon system)
+        {
+            _system = system;
+        }
+
+        public void Update()
+        {
+            // TODO: properly implement this
+            ref var shared = ref _system.Device.Hid.SharedMemory;
+            bool homeDown = shared.HomeButton.GetCurrentEntryRef().Buttons != 0;
+            bool captureDown = shared.CaptureButton.GetCurrentEntryRef().Buttons != 0;
+
+            int homeButtonPressDuration = 0;
+            int captureButtonPressDuration = 0;
+
+            if (_homeButtonPressed && !homeDown)
+            {
+                _homeButtonPressed = false;
+                homeButtonPressDuration = (int)(PerformanceCounter.ElapsedMilliseconds - _homeButtonPressedTimeStart);
+            }
+            else if (!_homeButtonPressed && homeDown)
+            {
+                _homeButtonPressed = true;
+                _homeButtonPressedTimeStart = PerformanceCounter.ElapsedMilliseconds;
+            }
+
+            if (_captureButtonPressed && !captureDown)
+            {
+                _captureButtonPressed = false;
+                captureButtonPressDuration = (int)(PerformanceCounter.ElapsedMilliseconds - _captureButtonPressedTime);
+            }
+            else if (!_captureButtonPressed && captureDown)
+            {
+                _captureButtonPressed = true;
+                _captureButtonPressedTime = PerformanceCounter.ElapsedMilliseconds;
+            }
+
+            if (homeButtonPressDuration > 500)
+            {
+                _system.WindowSystem.OnSystemButtonPress(SystemButtonType.PerformHomeButtonLongPressing);
+            }
+            else if (homeButtonPressDuration > 20)
+            {
+                _system.WindowSystem.OnSystemButtonPress(SystemButtonType.PerformHomeButtonShortPressing);
+            }
+
+            if (captureButtonPressDuration > 500)
+            {
+                _system.WindowSystem.OnSystemButtonPress(SystemButtonType.PerformCaptureButtonLongPressing);
+            }
+            else if (captureButtonPressDuration > 20)
+            {
+                _system.WindowSystem.OnSystemButtonPress(SystemButtonType.PerformCaptureButtonShortPressing);
             }
         }
     }

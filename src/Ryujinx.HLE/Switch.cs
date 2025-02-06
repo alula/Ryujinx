@@ -38,6 +38,7 @@ namespace Ryujinx.HLE
 
         public bool EnableDeviceVsync { get; set; } = true;
         public bool EnableServiceLLE { get; set; } = true;
+        public int LLESystemVersionMajor { get; private set; } = 0;
 
         public bool IsFrameAvailable => Gpu.Window.IsFrameAvailable;
 
@@ -79,77 +80,113 @@ namespace Ryujinx.HLE
 #pragma warning restore IDE0055
         }
 
-        public static readonly HashSet<string> ServiceLLEBlacklist = new() {
-            // glue
-            "bgtc:t",
-            "notif:a",
-            "notif:s",
-            
-            // // npns
-            // "npns:s",
-            // "npns:u",
-            
-            // settings
-            "set:cal",
-            "set:fd",
-            "set:sys",
-            
-            // account
-            "acc:su",
-            "acc:u0",
-            "acc:u1",
-            "acc:aa",
-            
-            // // fatal
-            // "fatal:u",
-            // "fatal:p",
-            
-            // // am
-            // "appletAE",
-            // "appletOE",
-            // // "idle:sys",
-            // // "omm",
-            // // "spsm",
-            // "tcap",
-            // "caps:su",
-            // "apm"
-        };
+        public static bool IsSystemProgramLaunchEnabled(ulong programId, int majorFirmwareVersion)
+        {
+            if (programId == SystemProgramId.Ns.Value)
+            {
+                return false; // todo: enable when pm is implemented
+            }
+
+            return true;
+        }
+
+        public static bool IsBlacklistedForHLE(string serviceName, int majorFirmwareVersion)
+        {
+            bool glue = IsSystemProgramLaunchEnabled(SystemProgramId.Glue.Value, majorFirmwareVersion);
+            bool npns = IsSystemProgramLaunchEnabled(SystemProgramId.Npns.Value, majorFirmwareVersion);
+            bool settings = IsSystemProgramLaunchEnabled(SystemProgramId.Settings.Value, majorFirmwareVersion);
+            bool account = IsSystemProgramLaunchEnabled(SystemProgramId.Account.Value, majorFirmwareVersion);
+            bool ns = IsSystemProgramLaunchEnabled(SystemProgramId.Ns.Value, majorFirmwareVersion);
+
+            bool isBlacklisted = serviceName switch
+            {
+                // glue
+                "bgtc:t" => glue,
+                "bgtc:sc" => glue,
+                "time:a" => glue && majorFirmwareVersion >= 9,
+                "time:r" => glue && majorFirmwareVersion >= 9,
+                "time:u" => glue && majorFirmwareVersion >= 9,
+                "notif:a" => glue,
+                "notif:s" => glue,
+                "ectx:w" => glue,
+                "ectx:r" => glue,
+                "ectx:aw" => glue,
+                "pl:u" => glue && majorFirmwareVersion >= 16,
+                "arp:w" => glue,
+                "arp:r" => glue,
+                // npns
+                "npns:s" => npns,
+                "npns:u" => npns,
+                // settings
+                "set:cal" => settings,
+                "set:fd" => settings,
+                "set:sys" => settings,
+                // account
+                "acc:su" => majorFirmwareVersion >= 13 ? ns : account,
+                "acc:u0" => majorFirmwareVersion >= 13 ? ns : account,
+                "acc:u1" => majorFirmwareVersion >= 13 ? ns : account,
+                "acc:aa" => account,
+                "acc:e" => account,
+                "acc:e:su" => account,
+                "acc:e:u1" => account,
+                "acc:e:u2" => account,
+                "dauth:0" => account,
+                // ns
+                "aoc:u" => ns,
+                "ns:am2" => ns,
+                "ns:dev" => ns,
+                "ns:ec" => ns,
+                "ns:rid" => ns,
+                "ns:rt" => ns,
+                "ns:su" => ns,
+                "ns:vm" => ns,
+                "ns:web" => ns,
+                "ovln:rcv" => ns && majorFirmwareVersion < 8,
+                "ovln:snd" => ns && majorFirmwareVersion < 8,
+                "ns:ro" => ns && majorFirmwareVersion >= 11,
+                "ns:sweb" => ns && majorFirmwareVersion >= 15,
+                // // fatal
+                // "fatal:u",
+                // "fatal:p",
+                // // am
+                // "appletAE",
+                // "appletOE",
+                // // "idle:sys",
+                // // "omm",
+                // // "spsm",
+                // "tcap",
+                // "caps:su",
+                // "apm"
+                _ => false
+            };
+
+            if (isBlacklisted)
+                Logger.Info?.Print(LogClass.Application, $"Service {serviceName} is blacklisted for HLE.");
+            return isBlacklisted;
+        }
 
         public void BootSystem()
         {
             if (!EnableServiceLLE)
                 return;
 
+            LLESystemVersionMajor = System.ContentManager.GetCurrentFirmwareVersion().Major;
+
             Logger.Info?.Print(LogClass.Application, "Booting services...");
 
-            LoadSystemTitleId(SystemProgramId.Settings.Value);
-            WaitServiceRegistered("set:sys");
+            // TODO: LLE boot2
 
-            // LoadSystemTitleId(SystemProgramId.Am.Value);
-            // WaitServiceRegistered("appletAE");
+            LoadSystemProgramIfSupportedOnCurrentFirmware(SystemProgramId.Settings.Value, "set:sys");
+            // LoadSystemProgramIfSupportedOnCurrentFirmware(SystemProgramId.Am.Value, "appletAE");
+            // LoadSystemProgramIfSupportedOnCurrentFirmware(SystemProgramId.Pgl.Value, "pgl");
+            // LoadSystemProgramIfSupportedOnCurrentFirmware(SystemProgramId.Ssl.Value, "ssl");
+            LoadSystemProgramIfSupportedOnCurrentFirmware(SystemProgramId.Glue.Value, "bgtc:t");
+            LoadSystemProgramIfSupportedOnCurrentFirmware(SystemProgramId.Account.Value, "acc:aa");
+            LoadSystemProgramIfSupportedOnCurrentFirmware(SystemProgramId.Ns.Value, "ns:am");
+            LoadSystemProgramIfSupportedOnCurrentFirmware(SystemProgramId.Npns.Value, "npns:s");
+            // LoadSystemProgramIfSupportedOnCurrentFirmware(SystemProgramId.Fatal.Value, "fatal:u"); // requires bus reimpl
 
-            // LoadSystemTitleId(SystemProgramId.Pgl.Value);
-            // WaitServiceRegistered("pgl");
-
-            // LoadSystemTitleId(SystemProgramId.Ns.Value);
-            // WaitServiceRegistered("ns:am");
-
-            // LoadSystemTitleId(SystemProgramId.Ssl.Value);
-            // WaitServiceRegistered("ssl");
-
-            LoadSystemTitleId(SystemProgramId.Glue.Value);
-            WaitServiceRegistered("bgtc:t");
-
-            LoadSystemTitleId(SystemProgramId.Account.Value);
-            WaitServiceRegistered("acc:aa");
-
-            // LoadSystemTitleId(SystemProgramId.Npns.Value);
-
-            // LoadSystemTitleId(SystemProgramId.Fatal.Value); // requires bus reimpl
-            // WaitServiceRegistered("fatal:u");
-
-
-            // LoadSystemTitleId(0x0100000000001000); // qlaunch
+            LoadSystemProgramId(0x010000000000100C);
         }
 
         public bool LoadCart(string exeFsDir, string romFsFile = null)
@@ -177,10 +214,10 @@ namespace Ryujinx.HLE
             return Processes.LoadNxo(fileName);
         }
 
-        public bool LoadSystemTitleId(ulong titleId)
+        public bool LoadSystemProgramId(ulong programId)
         {
-            string jitPath = System.ContentManager.GetInstalledContentPath(titleId, StorageId.BuiltInSystem, NcaContentType.Program);
-            string filePath = VirtualFileSystem.SwitchPathToSystemPath(jitPath);
+            string contentPath = System.ContentManager.GetInstalledContentPath(programId, StorageId.BuiltInSystem, NcaContentType.Program);
+            string filePath = VirtualFileSystem.SwitchPathToSystemPath(contentPath);
 
             if (string.IsNullOrWhiteSpace(filePath))
             {
@@ -196,6 +233,15 @@ namespace Ryujinx.HLE
             while (!System.SmRegistry.IsServiceRegistered(serviceName))
             {
                 System.SmRegistry.WaitForServiceRegistration();
+            }
+        }
+
+        private void LoadSystemProgramIfSupportedOnCurrentFirmware(ulong programId, string serviceNameToWaitFor)
+        {
+            if (IsSystemProgramLaunchEnabled(programId, LLESystemVersionMajor))
+            {
+                LoadSystemProgramId(programId);
+                WaitServiceRegistered(serviceNameToWaitFor);
             }
         }
 

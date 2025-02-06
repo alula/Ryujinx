@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Ryujinx.Horizon.Sdk.Applet;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletProxy
 {

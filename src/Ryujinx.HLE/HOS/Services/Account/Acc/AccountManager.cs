@@ -41,9 +41,9 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             {
                 byte[] defaultUserImage = EmbeddedResources.Read("Ryujinx.HLE/HOS/Services/Account/Acc/DefaultUserImage.jpg");
 
-                AddUser("RyuPlayer", defaultUserImage, DefaultUserId);
+                // AddUser("RyuPlayer", defaultUserImage, DefaultUserId);
 
-                OpenUser(DefaultUserId);
+                // OpenUser(DefaultUserId);
             }
             else
             {

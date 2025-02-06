@@ -250,8 +250,7 @@ namespace Ryujinx.HLE.HOS
         public void InitializeServices()
         {
             SmRegistry = new SmRegistry();
-            var ui = new IUserInterface(KernelContext, SmRegistry);
-            SmServer = new ServerBase(KernelContext, "SmServer", () => ui);
+            SmServer = new ServerBase(KernelContext, "SmServer", () => new IUserInterface(KernelContext, SmRegistry));
 
             // Wait until SM server thread is done with initialization,
             // only then doing connections to SM is safe.

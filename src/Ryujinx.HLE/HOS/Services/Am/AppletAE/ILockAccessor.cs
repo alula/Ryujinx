@@ -18,6 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
             _lockId = lockId;
             _isLocked = false;
             _lockEvent = new KEvent(system.KernelContext);
+            _lockEvent.ReadableEvent.Signal();
         }
 
         [CommandCmif(1)]
@@ -37,6 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
             }
 
             _isLocked = true;
+            _lockEvent.ReadableEvent.Signal();
 
             context.ResponseData.Write(_isLocked);
             if (returnHandle)
@@ -54,6 +56,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             _isLocked = false;
+            _lockEvent.ReadableEvent.Signal();
 
             return ResultCode.Success;
         }

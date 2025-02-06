@@ -5,6 +5,7 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Sdk.Applet;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletProxy
@@ -28,8 +29,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             _normalInDataEvent = new KEvent(system.KernelContext);
             _interactiveInDataEvent = new KEvent(system.KernelContext);
 
-            _applet.NormalSession.InDataAvailable += OnNormalInData;
-            _applet.InteractiveSession.InDataAvailable += OnInteractiveInData;
+            _applet.InChannel.DataAvailable += OnNormalInData;
+            _applet.InteractiveInChannel.DataAvailable += OnInteractiveInData;
         }
 
         private void OnNormalInData(object sender, EventArgs e)
@@ -48,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             byte[] appletData;
 
-            if (!_applet.NormalSession.TryPopInData(out appletData))
+            if (!_applet.InChannel.TryPopData(out appletData))
             {
                 return ResultCode.NotAvailable;
             }
@@ -69,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             if (_applet != null)
             {
                 IStorage data = GetObject<IStorage>(context, 0);
-                _applet.NormalSession.PushOutData(data.Data);
+                _applet.OutChannel.PushData(data.Data);
             }
 
             return ResultCode.Success;
@@ -80,7 +81,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             byte[] appletData;
 
-            if (!_applet.InteractiveSession.TryPopInData(out appletData))
+            if (!_applet.InteractiveInChannel.TryPopData(out appletData))
             {
                 return ResultCode.NotAvailable;
             }
@@ -101,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             if (_applet != null)
             {
                 IStorage data = GetObject<IStorage>(context, 0);
-                _applet.InteractiveSession.PushOutData(data.Data);
+                _applet.InteractiveOutChannel.PushData(data.Data);
             }
 
             return ResultCode.Success;
@@ -168,7 +169,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             AppletIdentifyInfo appletIdentifyInfo = new()
             {
-                AppletId = AppletId.QLaunch,
+                AppletId = AppletId.SystemAppletMenu,
                 TitleId = 0x0100000000001000,
             };
 
@@ -203,7 +204,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             IStorage data = GetObject<IStorage>(context, 0);
 
-            _applet.NormalSession.InsertFrontInData(data.Data);
+            _applet.InChannel.InsertFrontData(data.Data);
 
             return ResultCode.Success;
         }
@@ -230,7 +231,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             {
                 return new AppletIdentifyInfo
                 {
-                    AppletId = AppletId.QLaunch,
+                    AppletId = AppletId.SystemAppletMenu,
                     TitleId = 0x0100000000001000
                 };
             }

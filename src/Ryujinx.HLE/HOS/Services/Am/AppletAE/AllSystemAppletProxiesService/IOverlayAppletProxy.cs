@@ -1,3 +1,4 @@
+using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.OverlayAppletProxy;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService
@@ -61,6 +62,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService
         public ResultCode GetLibraryAppletCreator(ServiceCtx context)
         {
             MakeObject(context, new ILibraryAppletCreator(context, _pid));
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(20)]
+        // GetOverlayFunctions() -> object<nn::am::service::IOverlayFunctions>
+        public ResultCode GetOverlayFunctions(ServiceCtx context)
+        {
+            MakeObject(context, new IOverlayFunctions(context.Device.System));
 
             return ResultCode.Success;
         }

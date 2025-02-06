@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Ryujinx.Horizon.Sdk.Applet;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
 {

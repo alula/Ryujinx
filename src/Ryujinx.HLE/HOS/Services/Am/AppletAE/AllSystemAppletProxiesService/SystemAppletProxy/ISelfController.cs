@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
                 }
                 else
                 {
-                    // _applet.ExitLocked = true;
+                    _applet.ExitLocked = true;
                 }
             }
 
@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             lock (_applet.Lock)
             {
-                // _applet.ExitLocked = false;
+                _applet.ExitLocked = false;
 
                 if (_applet.AppletState.HasRequestedExit)
                 {

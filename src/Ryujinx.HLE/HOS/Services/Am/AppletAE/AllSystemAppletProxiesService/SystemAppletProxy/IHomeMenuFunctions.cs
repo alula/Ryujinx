@@ -19,7 +19,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // RequestToGetForeground()
         public ResultCode RequestToGetForeground(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            // Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            context.Device.System.WindowSystem.RequestHomeMenuToGetForeground();
 
             return ResultCode.Success;
         }
@@ -28,7 +29,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // LockForeground()
         public ResultCode LockForeground(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            // Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            context.Device.System.WindowSystem.RequestLockHomeMenuIntoForeground();
 
             return ResultCode.Success;
         }
@@ -37,7 +39,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // UnlockForeground()
         public ResultCode UnlockForeground(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            // Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            context.Device.System.WindowSystem.RequestUnlockHomeMenuFromForeground();
 
             return ResultCode.Success;
         }

@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Sdk.Applet;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletCreator
@@ -18,8 +19,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         private readonly AppletId _appletId;
         private RealApplet _applet;
 
-        private readonly AppletSession _normalSession;
-        private readonly AppletSession _interactiveSession;
+        private readonly AppletChannel _inChannel;
+        private readonly AppletChannel _outChannel;
+        private readonly AppletChannel _interactiveInChannel;
+        private readonly AppletChannel _interactiveOutChannel;
+        private readonly AppletChannel _contextChannel;
 
         private readonly KEvent _stateChangedEvent;
         private readonly KEvent _normalOutDataEvent;
@@ -72,11 +76,14 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             _callerPid = callerPid;
             _appletId = appletId;
 
-            _normalSession = new AppletSession();
-            _interactiveSession = new AppletSession();
+            _inChannel = new AppletChannel();
+            _outChannel = new AppletChannel();
+            _interactiveInChannel = new AppletChannel();
+            _interactiveOutChannel = new AppletChannel();
+            _contextChannel = new AppletChannel();
 
-            _normalSession.OutDataAvailable += OnNormalOutData;
-            _interactiveSession.OutDataAvailable += OnInteractiveOutData;
+            _outChannel.DataAvailable += OnNormalOutData;
+            _interactiveOutChannel.DataAvailable += OnInteractiveOutData;
         }
 
         private void OnAppletStateChanged(object sender, EventArgs e)
@@ -121,7 +128,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                 return result;
             }
 
-            return (ResultCode)_applet.Start(_normalSession, _interactiveSession);
+            return (ResultCode)_applet.Start(_inChannel, _outChannel, _interactiveInChannel, _interactiveOutChannel, _contextChannel);
         }
 
         [CommandCmif(20)]
@@ -175,7 +182,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             IStorage data = GetObject<IStorage>(context, 0);
 
-            _normalSession.PushInData(data.Data);
+            _inChannel.PushData(data.Data);
 
             return ResultCode.Success;
         }
@@ -184,7 +191,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopOutData() -> object<nn::am::service::IStorage>
         public ResultCode PopOutData(ServiceCtx context)
         {
-            if (_normalSession.TryPopOutData(out byte[] data))
+            if (_outChannel.TryPopData(out byte[] data))
             {
                 MakeObject(context, new IStorage(data));
 
@@ -202,7 +209,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             IStorage data = GetObject<IStorage>(context, 0);
 
-            _interactiveSession.PushInData(data.Data);
+            _interactiveInChannel.PushData(data.Data);
 
             return ResultCode.Success;
         }
@@ -211,7 +218,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopInteractiveOutData() -> object<nn::am::service::IStorage>
         public ResultCode PopInteractiveOutData(ServiceCtx context)
         {
-            if (_interactiveSession.TryPopOutData(out byte[] data))
+            if (_interactiveOutChannel.TryPopData(out byte[] data))
             {
                 MakeObject(context, new IStorage(data));
 

@@ -1,6 +1,6 @@
 namespace Ryujinx.Horizon.Sdk.Applet
 {
-    enum AppletId : uint
+    public enum AppletId : uint
     {
         None = 0x00,
         Application = 0x01,
