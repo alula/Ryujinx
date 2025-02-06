@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Horizon.Generators.Hipc
 {
-    class CommandInterface
+    class CommandImplInterface
     {
         public ClassDeclarationSyntax ClassDeclarationSyntax { get; }
         public List<MethodDeclarationSyntax> CommandImplementations { get; }
 
-        public CommandInterface(ClassDeclarationSyntax classDeclarationSyntax)
+        public CommandImplInterface(ClassDeclarationSyntax classDeclarationSyntax)
         {
             ClassDeclarationSyntax = classDeclarationSyntax;
             CommandImplementations = new List<MethodDeclarationSyntax>();

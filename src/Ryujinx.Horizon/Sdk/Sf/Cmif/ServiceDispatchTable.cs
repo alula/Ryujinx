@@ -27,7 +27,12 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
                 return new DomainServiceObjectDispatchTable();
             }
 
-            return new ServiceDispatchTable(instance.GetType().Name, instance.GetCommandHandlers());
+            if (instance is IServiceObjectCommandHandlers serviceInstance)
+            {
+                return new ServiceDispatchTable(serviceInstance.GetType().Name, serviceInstance.GetCommandHandlers());
+            }
+
+            throw new ArgumentException($"Invalid service object type: {instance.GetType().Name}");
         }
     }
 }
