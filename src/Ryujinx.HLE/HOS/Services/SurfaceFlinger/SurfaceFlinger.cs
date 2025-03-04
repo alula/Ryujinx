@@ -37,8 +37,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private readonly object _lock = new();
 
-        // public long RenderLayerId { get; private set; }
-
         private class Layer
         {
             public int ProducerBinderId;
@@ -47,6 +45,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             public BufferQueueCore Core;
             public ulong Owner;
             public LayerState State;
+            public long ZIndex;
+            public bool Visible;
         }
 
         private class TextureCallbackInformation
@@ -59,7 +59,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             _device = device;
             _layers = new Dictionary<long, Layer>();
-            // RenderLayerId = 0;
 
             _composerThread = new Thread(HandleComposition)
             {
@@ -116,8 +115,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             lock (_lock)
             {
-                Logger.Info?.Print(LogClass.SurfaceFlinger, $"Creating layer {layerId}");
-
                 BufferQueueCore core = BufferQueue.CreateBufferQueue(_device, pid, out BufferQueueProducer producer, out BufferQueueConsumer consumer);
 
                 core.BufferQueued += () =>
@@ -133,6 +130,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     Core = core,
                     Owner = pid,
                     State = initialState,
+                    ZIndex = 0,
+                    Visible = true
                 });
             }
         }
@@ -238,19 +237,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private void CloseLayer(long layerId, Layer layer)
         {
-            // If the layer was removed and the current in use, we need to change the current layer in use.
-            // if (RenderLayerId == layerId)
-            // {
-            //     // If no layer is availaible, reset to default value.
-            //     if (_layers.Count == 0)
-            //     {
-            //         SetRenderLayer(0);
-            //     }
-            //     else
-            //     {
-            //         SetRenderLayer(_layers.Last().Key);
-            //     }
-            // }
             Logger.Info?.Print(LogClass.SurfaceFlinger, $"Closing layer {layerId}");
 
             if (layer.State == LayerState.ManagedOpened)
@@ -258,14 +244,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 layer.State = LayerState.ManagedClosed;
             }
         }
-
-        // public void SetRenderLayer(long layerId)
-        // {
-        //     lock (_lock)
-        //     {
-        //         RenderLayerId = layerId;
-        //     }
-        // }
 
         private Layer GetLayerByIdLocked(long layerId)
         {
@@ -293,6 +271,41 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
 
             return null;
+        }
+
+        public void SetLayerZ(long layerId, long zIndex)
+        {
+            lock (_lock)
+            {
+                if (_layers.TryGetValue(layerId, out Layer layer))
+                {
+                    layer.ZIndex = zIndex;
+                }
+            }
+        }
+
+        public long GetLayerZ(long layerId)
+        {
+            lock (_lock)
+            {
+                if (_layers.TryGetValue(layerId, out Layer layer))
+                {
+                    return layer.ZIndex;
+                }
+            }
+
+            return 0;
+        }
+
+        public void SetLayerVisibility(long layerId, bool visible)
+        {
+            lock (_lock)
+            {
+                if (_layers.TryGetValue(layerId, out Layer layer))
+                {
+                    layer.Visible = visible;
+                }
+            }
         }
 
         private void HandleComposition()
@@ -358,13 +371,41 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void Compose()
         {
+            int swapInterval = 0;
+
             lock (_lock)
             {
-                // TODO: massive hack
+                var sortedLayers = new (long, Layer)[_layers.Count];
+                int i = 0;
                 foreach (var (layerId, layer) in _layers)
+                {
+                    sortedLayers[i++] = (layer.ZIndex, layer);
+                }
+
+                // sort by ZIndex then by ID
+                Array.Sort(sortedLayers, (a, b) =>
+                {
+                    var (aId, aLayer) = a;
+                    var (bId, bLayer) = b;
+
+                    // invisible first
+                    int aVisible = aLayer.Visible ? 0 : 1;
+                    int bVisible = bLayer.Visible ? 0 : 1;
+
+                    int cmp = aVisible.CompareTo(bVisible);
+                    if (cmp == 0)
+                        cmp = aLayer.ZIndex.CompareTo(bLayer.ZIndex);
+                    if (cmp == 0)
+                        cmp = aId.CompareTo(bId);
+                    return cmp;
+                });
+
+                foreach (var (layerId, layer) in sortedLayers)
                 {
                     if (layer.State == LayerState.NotInitialized || layer.State == LayerState.ManagedClosed)
                         continue;
+
+                    // Logger.Info?.Print(LogClass.SurfaceFlinger, $"Composing layer {layerId}");
 
                     // cleanup layers of dead processes
                     if (_device.System.KernelContext.Processes.TryGetValue(layer.Owner, out var process))
@@ -387,19 +428,19 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     if (acquireStatus == Status.Success)
                     {
                         // If device vsync is disabled, reflect the change.
-                        if (!_device.EnableDeviceVsync)
+                        if (_device.EnableDeviceVsync)
                         {
+                            swapInterval = Math.Max(swapInterval, item.SwapInterval);
                             if (_swapInterval != 0)
                             {
                                 UpdateSwapInterval(0);
                             }
                         }
-                        else if (item.SwapInterval != _swapInterval)
-                        {
-                            UpdateSwapInterval(item.SwapInterval);
-                        }
 
-                        PostFrameBuffer(layer, item);
+                        // if (layer.Visible)
+                        {
+                            PostFrameBuffer(layer, item);
+                        }
                     }
                     else if (acquireStatus != Status.NoBufferAvailaible && acquireStatus != Status.InvalidOperation)
                     {
@@ -407,6 +448,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                         Logger.Warning?.Print(LogClass.SurfaceFlinger, $"Failed to acquire buffer for layer {layerId} (status: {acquireStatus})");
                         continue;
                     }
+                }
+
+                if (_swapInterval != swapInterval)
+                {
+                    UpdateSwapInterval(swapInterval);
                 }
             }
         }

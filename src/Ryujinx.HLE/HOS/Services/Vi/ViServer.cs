@@ -208,6 +208,21 @@ namespace Ryujinx.HLE.HOS.Services
             return _sharedLayerId;
         }
 
+        public void SetLayerZ(long layerId, int z)
+        {
+            _surfaceFlinger.SetLayerZ(layerId, z);
+        }
+
+        public long GetLayerZ(long layerId)
+        {
+            return _surfaceFlinger.GetLayerZ(layerId);
+        }
+
+        public void SetLayerVisibility(long layerId, bool visible)
+        {
+            _surfaceFlinger.SetLayerVisibility(layerId, visible);
+        }
+
         private ulong CalculateFramebufferSize()
         {
             // Each GOB dimension is 512 bytes x 8 lines.
@@ -220,11 +235,17 @@ namespace Ryujinx.HLE.HOS.Services
             return _bufferMap;
         }
 
-        public int GetApplicationLastPresentedFrameHandle(GpuContext gpuContext)
+        public enum FrameHandleIndex {
+            Application = 0,
+            Foreground = 1,
+            CallerApplet = 2,
+        };
+
+        public int GetLastPresentedFrameHandle(GpuContext gpuContext, FrameHandleIndex handleIndex)
         {
             var texture = gpuContext.Window.GetLastPresentedData();
             var selfAs = KernelStatic.GetProcessByPid(_pid).CpuMemory;
-            int fbIndex = (int)_fbCount; // Place it after all our frame buffers.
+            int fbIndex = (int)_fbCount + (int)handleIndex; // Place it after all our frame buffers.
 
             selfAs.Write(_fbsBaseAddress + _bufferMap.SharedBuffers[fbIndex].Offset, texture.Data);
 

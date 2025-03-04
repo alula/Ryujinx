@@ -1,18 +1,20 @@
 using LibHac.Util;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.Horizon.Common;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class IHomeMenuFunctions : IpcService
+    class IHomeMenuFunctions : DisposableIpcService
     {
+        private readonly KernelContext _kernelContext;
         private int _channelEventHandle;
 
         public IHomeMenuFunctions(Horizon system)
         {
+            _kernelContext = system.KernelContext;
         }
 
         [CommandCmif(10)]
@@ -59,6 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             Logger.Info?.Print(LogClass.ServiceAm, $"GeneralChannel data: {data.ToHexString()}");
 
             MakeObject(context, new IStorage(data));
+            context.Device.System.GeneralChannelEvent.ReadableEvent.Clear();
 
             return ResultCode.Success;
         }
@@ -79,8 +82,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_channelEventHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
-
             return ResultCode.Success;
         }
 
@@ -95,6 +96,17 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
+        }
+
+        protected override void Dispose(bool isDisposing)
+        {
+            if (isDisposing)
+            {
+                if (_channelEventHandle != 0)
+                {
+                    _kernelContext.Syscall.CloseHandle(_channelEventHandle);
+                }
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using LibHac.Util;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Ipc;
@@ -153,11 +154,12 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(20)]
         // PushToGeneralChannel(object<nn::am::service::IStorage>)
-        public ResultCode PushInData(ServiceCtx context)
+        public ResultCode PushToGeneralChannel(ServiceCtx context)
         {
             IStorage data = GetObject<IStorage>(context, 0);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            context.Device.System.PushToGeneralChannel(data.Data);
+            Logger.Info?.Print(LogClass.ServiceAm, $"GeneralChannel data: {data.Data.ToHexString()}");
 
             return ResultCode.Success;
         }

@@ -354,7 +354,8 @@ namespace Ryujinx.HLE.HOS
             if (data.Length > 0)
             {
                 GeneralChannelData.Enqueue(data);
-                GeneralChannelEvent.ReadableEvent.Signal();
+                if (GeneralChannelData.Count == 1)
+                    GeneralChannelEvent.ReadableEvent.Signal();
             }
         }
 

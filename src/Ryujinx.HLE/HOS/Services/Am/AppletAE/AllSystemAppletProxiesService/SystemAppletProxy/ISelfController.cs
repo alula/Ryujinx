@@ -261,6 +261,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             // context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
 
             context.ResponseData.Write(layerId);
+            _applet.LayerId = layerId;
 
             return ResultCode.Success;
         }
@@ -279,8 +280,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetSystemSharedLayerHandle() -> (nn::vi::fbshare::SharedBufferHandle, nn::vi::fbshare::SharedLayerHandle)
         public ResultCode GetSystemSharedLayerHandle(ServiceCtx context)
         {
+            long sharedLayerId = context.Device.System.ViServerS.GetSharedLayerId();
             context.ResponseData.Write((ulong)context.Device.System.ViServerS.GetSharedBufferNvMapId());
-            context.ResponseData.Write(context.Device.System.ViServerS.GetSharedLayerId());
+            context.ResponseData.Write(sharedLayerId);
+
+            _applet.LayerId = sharedLayerId;
 
             return ResultCode.Success;
         }
@@ -294,6 +298,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
             context.ResponseData.Write(displayLayerId);
             context.ResponseData.Write(recordingLayerId);
+
+            _applet.LayerId = displayLayerId;
 
             return ResultCode.Success;
         }

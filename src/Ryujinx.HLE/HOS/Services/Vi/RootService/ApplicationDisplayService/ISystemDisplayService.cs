@@ -21,11 +21,29 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
             _applicationDisplayService = applicationDisplayService;
         }
 
+        [CommandCmif(2204)]
+        // GetLayerZ(u64) -> u64
+        public ResultCode GetLayerZ(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceVi);
+
+            long layerId = context.RequestData.ReadInt64();
+            long zIndex = context.Device.System.ViServerS.GetLayerZ(layerId);
+
+            context.ResponseData.Write(zIndex);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(2205)]
         // SetLayerZ(u64, u64)
         public ResultCode SetLayerZ(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceVi);
+            long layerId = context.RequestData.ReadInt64();
+            long zIndex = context.RequestData.ReadInt64();
+            Logger.Stub?.PrintStub(LogClass.ServiceVi, new { layerId, zIndex });
+
+            context.Device.System.ViServerS.SetLayerZ(layerId, (int)zIndex);
 
             return ResultCode.Success;
         }
@@ -34,7 +52,11 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
         // SetLayerVisibility(b8, u64)
         public ResultCode SetLayerVisibility(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceVi);
+            long layerId = context.RequestData.ReadInt64();
+            bool visibility = context.RequestData.ReadBoolean();
+            Logger.Stub?.PrintStub(LogClass.ServiceVi, new { layerId, visibility });
+
+            context.Device.System.ViServerS.SetLayerVisibility(layerId, visibility);
 
             return ResultCode.Success;
         }

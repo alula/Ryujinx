@@ -159,18 +159,19 @@ namespace Ryujinx.HLE.HOS.Applets
         {
             if (applet.AppletId == AppletId.SystemAppletMenu)
             {
-                //applet.AppletState.SetFocusHandlingMode(false);
+                applet.AppletState.SetFocusHandlingMode(false);
                 applet.AppletState.SetOutOfFocusSuspendingEnabled(false);
                 RequestHomeMenuToGetForeground();
             }
             else if (applet.AppletId == AppletId.OverlayApplet)
             {
+                applet.AppletState.SetFocusHandlingMode(false);
                 applet.AppletState.SetOutOfFocusSuspendingEnabled(false);
-                applet.AppletState.SetFocusState(FocusState.OutOfFocus);
+                applet.LayerZ = 3;
+                _foregroundRequestedApplet = applet;
             }
             else
             {
-                applet.AppletState.SetFocusState(FocusState.InFocus);
                 _foregroundRequestedApplet = applet;
                 RequestApplicationToGetForeground();
             }
@@ -321,6 +322,8 @@ namespace Ryujinx.HLE.HOS.Applets
                     _overlayDisp.AppletState.PushUnorderedMessage(message);
                 }
             }
+
+            _eventObserver.RequestUpdate();
         }
 
         private void PruneTerminatedAppletsLocked()
@@ -422,6 +425,11 @@ namespace Ryujinx.HLE.HOS.Applets
 
             lock (applet.Lock)
             {
+                if (applet.AppletId == AppletId.OverlayApplet)
+                {
+                    isForeground = true;
+                }
+
                 var inheritedForeground = applet.IsProcessRunning && isForeground;
                 var visibleState = inheritedForeground ? ActivityState.ForegroundVisible : ActivityState.BackgroundVisible;
                 var obscuredState = inheritedForeground ? ActivityState.ForegroundObscured : ActivityState.BackgroundObscured;
@@ -441,8 +449,6 @@ namespace Ryujinx.HLE.HOS.Applets
                     return false;
                 });
 
-                // TODO: Update visibility state
-
                 applet.SetInteractibleLocked(isForeground && applet.WindowVisible);
 
                 var isObscured = hasObscuringChildApplets || !applet.WindowVisible;
@@ -459,8 +465,28 @@ namespace Ryujinx.HLE.HOS.Applets
                     applet.UpdateSuspensionStateLocked(true);
                 }
 
-                Logger.Info?.Print(LogClass.ServiceAm, $"Updating applet state for {applet.AppletId}: visible={applet.WindowVisible}, foreground={isForeground}, obscured={isObscured}, reqFState={applet.AppletState.RequestedFocusState}, ackFState={applet.AppletState.AcknowledgedFocusState}, runnable={applet.AppletState.IsRunnable()}");
+                int zIndex = state switch
+                {
+                    ActivityState.ForegroundVisible => 2,
+                    ActivityState.ForegroundObscured => 1,
+                    _ => 0
+                };
+                if (applet.AppletId == AppletId.OverlayApplet)
+                {
+                    zIndex = 3;
+                }
 
+                applet.LayerZ = zIndex;
+
+                // TODO: Update visibility state
+                if (applet.LayerId >= 0)
+                {
+                    _system.ViServerS.SetLayerVisibility(applet.LayerId, isForeground && applet.WindowVisible);
+                    _system.ViServerS.SetLayerZ(applet.LayerId, applet.LayerZ);
+                }
+
+
+                Logger.Info?.Print(LogClass.ServiceAm, $"Updating applet state for {applet.AppletId}: visible={applet.WindowVisible}, foreground={isForeground}, obscured={isObscured}, reqFState={applet.AppletState.RequestedFocusState}, ackFState={applet.AppletState.AcknowledgedFocusState}, runnable={applet.AppletState.IsRunnable()}");
 
                 // Recurse into child applets
                 foreach (var child in applet.ChildApplets)

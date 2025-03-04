@@ -115,6 +115,8 @@ namespace Ryujinx.HLE.HOS.Applets
         internal bool IsInteractable = true;
         internal bool WindowVisible = true;
         internal bool ExitLocked = false;
+        internal long LayerId = -1;
+        internal int LayerZ = 0;
 
         internal AppletStateMgr AppletState { get; private set; }
         public event EventHandler AppletStateChanged;

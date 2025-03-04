@@ -145,8 +145,34 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         public ResultCode AcquireLastApplicationCaptureSharedBuffer(ServiceCtx context)
         {
             context.ResponseData.Write(1);
-            context.ResponseData.Write(context.Device.System.ViServerS.GetApplicationLastPresentedFrameHandle(context.Device.Gpu));
+            context.ResponseData.Write(context.Device.System.ViServerS.GetLastPresentedFrameHandle(context.Device.Gpu, ViServer.FrameHandleIndex.Application));
 
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(23)]
+        // ReleaseLastApplicationCaptureSharedBuffer()
+        public ResultCode ReleaseLastApplicationCaptureSharedBuffer(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(24)]
+        // AcquireLastForegroundCaptureSharedBuffer() -> (b8, u32)
+        public ResultCode AcquireLastForegroundCaptureSharedBuffer(ServiceCtx context)
+        {
+            context.ResponseData.Write(1);
+            context.ResponseData.Write(context.Device.System.ViServerS.GetLastPresentedFrameHandle(context.Device.Gpu, ViServer.FrameHandleIndex.Foreground));
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(25)]
+        // ReleaseLastForegroundCaptureSharedBuffer()
+        public ResultCode ReleaseLastForegroundCaptureSharedBuffer(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
             return ResultCode.Success;
         }
 
@@ -156,8 +182,16 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             // TODO: How does the handling for applets differ from the one for applications?
             context.ResponseData.Write(1);
-            context.ResponseData.Write(context.Device.System.ViServerS.GetApplicationLastPresentedFrameHandle(context.Device.Gpu));
+            context.ResponseData.Write(context.Device.System.ViServerS.GetLastPresentedFrameHandle(context.Device.Gpu, ViServer.FrameHandleIndex.CallerApplet));
 
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(27)]
+        // ReleaseCallerAppletCaptureSharedBuffer()
+        public ResultCode ReleaseCallerAppletCaptureSharedBuffer(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
             return ResultCode.Success;
         }
     }
