@@ -674,12 +674,12 @@ namespace Ryujinx.Ava
             {
                 Logger.Info?.Print(LogClass.Application, "Loading as Firmware Title (NCA).");
 
-                if (!Device.LoadNca(ApplicationPath))
-                {
-                    Device.Dispose();
+                // if (!Device.LoadNca(ApplicationPath))
+                // {
+                //     Device.Dispose();
 
-                    return false;
-                }
+                //     return false;
+                // }
             }
             else if (Directory.Exists(ApplicationPath))
             {
