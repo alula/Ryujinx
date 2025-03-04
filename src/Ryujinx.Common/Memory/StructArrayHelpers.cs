@@ -779,6 +779,18 @@ namespace Ryujinx.Common.Memory
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, Length);
     }
 
+    public struct Array120<T> : IArray<T> where T : unmanaged
+    {
+        T _e0;
+        Array60<T> _other;
+        Array59<T> _other2;
+        public readonly int Length => 120;
+        public ref T this[int index] => ref AsSpan()[index];
+
+        [Pure]
+        public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, Length);
+    }
+
     public struct Array127<T> : IArray<T> where T : unmanaged
     {
         T _e0;

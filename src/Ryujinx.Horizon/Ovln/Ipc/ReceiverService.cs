@@ -7,13 +7,19 @@ namespace Ryujinx.Horizon.Ovln.Ipc
 {
     partial class ReceiverService : IReceiverService
     {
+        private readonly MessageSourceManager _manager;
+
+        public ReceiverService(MessageSourceManager manager)
+        {
+            _manager = manager;
+        }
+
         [CmifCommand(0)]
-        // OpenReceiver() -> object<nn::ovln::IReceiver>
         public Result OpenReceiver(out IReceiver service)
         {
-            service = new Receiver();
+            service = new Receiver(_manager);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceOvln);
+            // Logger.Stub?.PrintStub(LogClass.ServiceOvln);
 
             return Result.Success;
         }

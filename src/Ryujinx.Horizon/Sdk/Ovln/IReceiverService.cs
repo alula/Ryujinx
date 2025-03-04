@@ -5,6 +5,7 @@ namespace Ryujinx.Horizon.Sdk.Ovln
 {
     interface IReceiverService : IServiceObject
     {
+        [CmifCommand(0)]
         Result OpenReceiver(out IReceiver service);
     }
 }

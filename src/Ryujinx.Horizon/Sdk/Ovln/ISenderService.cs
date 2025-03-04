@@ -5,6 +5,7 @@ namespace Ryujinx.Horizon.Sdk.Ovln
 {
     interface ISenderService : IServiceObject
     {
-        Result OpenSender(out ISender service);
+        [CmifCommand(0)]
+        Result OpenSender(out ISender service, SourceName name, ulong queueSize);
     }
 }

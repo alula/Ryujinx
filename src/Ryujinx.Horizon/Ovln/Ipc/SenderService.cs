@@ -7,13 +7,21 @@ namespace Ryujinx.Horizon.Ovln.Ipc
 {
     partial class SenderService : ISenderService
     {
-        [CmifCommand(0)]
-        // OpenSender() -> object<nn::ovln::ISender>
-        public Result OpenSender(out ISender service)
-        {
-            service = new Sender();
+        private readonly MessageSourceManager _messageSourceManager;
 
-            Logger.Stub?.PrintStub(LogClass.ServiceOvln);
+        public SenderService(MessageSourceManager messageSourceManager)
+        {
+            _messageSourceManager = messageSourceManager;
+        }
+
+        [CmifCommand(0)]
+        public Result OpenSender(out ISender service, SourceName name, ulong queueSize)
+        {
+            var source = _messageSourceManager.AddSource(name.GetString());
+
+            service = new Sender(source);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceOvln, new { name = name.GetString(), queueSize });
 
             return Result.Success;
         }

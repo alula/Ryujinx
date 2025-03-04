@@ -29,10 +29,10 @@ namespace Ryujinx.Horizon.Ovln
 
             _serverManager = new ServerManager(allocator, _sm, MaxPortsCount, _options, TotalMaxSessionsCount);
 
-#pragma warning disable IDE0055 // Disable formatting
-            _serverManager.RegisterObjectForServer(new ReceiverService(), ServiceName.Encode("ovln:rcv"), OvlnRcvMaxSessionsCount); // 8.0.0+
-            _serverManager.RegisterObjectForServer(new SenderService(),   ServiceName.Encode("ovln:snd"), OvlnSndMaxSessionsCount); // 8.0.0+
-#pragma warning restore IDE0055
+            var messageSourceManager = new MessageSourceManager();
+
+            _serverManager.RegisterObjectForServer(new ReceiverService(messageSourceManager), ServiceName.Encode("ovln:rcv"), OvlnRcvMaxSessionsCount); // 8.0.0+
+            _serverManager.RegisterObjectForServer(new SenderService(messageSourceManager), ServiceName.Encode("ovln:snd"), OvlnSndMaxSessionsCount); // 8.0.0+
         }
 
         public void ServiceRequests()
