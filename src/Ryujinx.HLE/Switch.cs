@@ -186,7 +186,8 @@ namespace Ryujinx.HLE
             LoadSystemProgramIfSupportedOnCurrentFirmware(SystemProgramId.Npns.Value, "npns:s");
             // LoadSystemProgramIfSupportedOnCurrentFirmware(SystemProgramId.Fatal.Value, "fatal:u"); // requires bus reimpl
 
-            LoadSystemProgramId(0x010000000000100C);
+            // LoadSystemProgramId(0x010000000000100C); // overlayDisp
+            // LoadSystemProgramId(0x0100000000001000); // qlaunch
         }
 
         public bool LoadCart(string exeFsDir, string romFsFile = null)
